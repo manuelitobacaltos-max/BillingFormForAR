@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vienovo Invoice Entry</title>
+    <style>
+        :root {
+            --vienovo-blue: #0d3b6e;
+            --vienovo-green: #8dc63f;
+            --light-bg: #f4f7f9;
+            --text-gray: #58666e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, var(--vienovo-blue) 0%, #1a5695 100%);
+            color: white;
+            padding: 40px;
+            position: relative;
+        }
+
+        .header-banner h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 300;
+        }
+
+        .header-banner h1 b {
+            color: var(--vienovo-green);
+            font-weight: 700;
+        }
+
+        .header-banner p {
+            opacity: 0.8;
+            font-size: 14px;
+            margin-top: 10px;
+            max-width: 80%;
+        }
+
+        .form-section {
+            padding: 30px 40px;
+            border-bottom: 1px solid #edf1f2;
+        }
+
+        .field-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--vienovo-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-label::after {
+            content: '';
+            height: 2px;
+            width: 30px;
+            background: var(--vienovo-green);
+            margin-left: 10px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .question-desc {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 2px solid #e1e8ed;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-bottom-color: var(--vienovo-blue);
+        }
+
+        /* Discount Slider */
+        .slider-container {
+            padding: 20px 0;
+        }
+
+        .slider-value {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--vienovo-blue);
+        }
+
+        /* Upload Area */
+        .upload-box {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upload-box:hover {
+            background: #edf2f7;
+            border-color: var(--vienovo-green);
+        }
+
+        .footer-actions {
+            background: var(--vienovo-blue);
+            padding: 25px 40px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .btn-submit {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #94a3b8; /* Disabled look if not filled */
+        }
+
+        .btn-submit.active {
+            background: var(--vienovo-green);
+            color: var(--vienovo-blue);
+            border: none;
+        }
+
+        .btn-draft {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-banner">
+        <h1>Invoice <b>Entry.</b></h1>
+        <p>A streamlined form designed to capture every essential detail in under a minute. Your careful input helps our invoicing pipeline run smoothly.</p>
+    </div>
+
+    <form id="billingForm">
+        <div class="form-section">
+            <div class="field-label">Field 01</div>
+            <div class="question-text">Customer *</div>
+            <div class="question-desc">Select the customer account. Master data details will populate automatically below.</div>
+            <input type="text" name="customer" placeholder="Search and select a customer" required>
+        </div>
+
+        <div class="form-section">
+            <div class="field-label">Field 02</div>
+            <div class="question-text">Customer Purchase Order *</div>
+            <input type="text" name="po" placeholder="e.g., PO-2026-00423" required>
+        </div>
+
+        <div class="form-section">
+            <div class="field-label">Field 04</div>
+            <div class="question-text">Gross Amount *</div>
+            <input type="number" name="gross" placeholder="0.00" step="0.01" required>
+        </div>
+
+        <div class="form-section">
+            <div class="field-label">Field 05</div>
+            <div class="question-text">Discount Rate</div>
+            <div class="slider-container">
+                <span class="slider-value" id="discDisplay">0.0</span> <span style="color:var(--vienovo-green); font-weight:bold;">%</span>
+                <input type="range" name="discount" min="0" max="50" value="0" style="width: 100%; margin-top:15px;" oninput="document.getElementById('discDisplay').innerText = this.value">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="field-label">Field 08 · Final</div>
+            <div class="question-text">Signed Delivery Documentation *</div>
+            <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                <div style="font-size: 30px; color: var(--vienovo-blue);">↑</div>
+                <div style="color: var(--vienovo-green); font-weight:bold; margin-top:10px;">Click to upload <span style="color: #333; font-weight:normal;">or drag and drop</span></div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top:5px;">PDF · JPG · PNG · MAX 10MB</div>
+                <input type="file" id="fileInput" style="display:none" required>
+                <div id="fileNameDisplay" style="margin-top:10px; font-size:12px; font-weight:bold; color:var(--vienovo-blue);"></div>
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <button type="submit" class="btn btn-submit active">Submit Invoice</button>
+            <button type="button" class="btn btn-draft">Save as Draft</button>
+            <div style="margin-left: auto; color: rgba(255,255,255,0.5); font-size: 11px; font-weight: bold; text-transform: uppercase;">* Required Fields</div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Isulat dito ang iyong Google Apps Script Web App URL
+    const WEB_APP_URL = "IPALIT_YUNG_URL_DITO";
+
+    // Show selected filename
+    document.getElementById('fileInput').onchange = function() {
+        document.getElementById('fileNameDisplay').innerText = "Selected: " + this.files[0].name;
+    };
+
+    // Form Submission Logic (Katulad ng kanina pero in-update ang IDs)
+    document.getElementById('billingForm').onsubmit = function(e) {
+        e.preventDefault();
+        alert("Sending to Vienovo AR System...");
+        // Dito papasok yung fetch code na binigay ko sa previous na sagot.
+    };
+</script>
+
+</body>
+</html>
