@@ -2,626 +2,690 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Vienovo AR — Collection Email Form</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vienovo Inc. · Accounts Receivable — Customer Billing Statement</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --navy-1: #0e2a44;
-    --navy-2: #1a4670;
-    --navy-3: #245a8c;
-    --green: #8BC34A;
-    --green-dark: #6ea637;
-    --text: #2a2a2a;
-    --muted: #8a95a3;
-    --line: #e4e8ed;
-    --bg: #f4f6f8;
+    --brand: #185FA5;
+    --brand-dark: #0F4278;
+    --warn: #BA7517;
+    --alert: #A32D2D;
+    --ok: #2E7D4F;
+    --bg: #eef2f6;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #dfe4ea;
+    --soft: #f7f9fc;
   }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
     background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
+    color: var(--ink);
+    line-height: 1.55;
+    padding: 20px 12px 40px;
   }
-  .container { max-width: 920px; margin: 0 auto; padding: 28px 24px 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
 
-  /* === TOP BAR === */
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 16px;
-    border-bottom: 2px solid var(--green);
-    margin-bottom: 28px;
-  }
-  .brand { display: flex; align-items: center; gap: 14px; }
-  .logo-circle {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--navy-1), var(--navy-3));
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-  }
-  .logo-circle::after {
-    content: ''; width: 10px; height: 10px; border-radius: 50%;
-    background: var(--green); box-shadow: 0 0 0 2px #fff;
-  }
-  .brand-text .name { font-size: 22px; font-weight: 700; color: var(--navy-1); letter-spacing: -0.5px; }
-  .brand-text .name .ac { color: var(--green); }
-  .brand-text .sub { font-size: 11px; color: var(--muted); letter-spacing: 2px; font-weight: 600; }
-  .session { text-align: right; }
-  .session .label { font-size: 11px; color: var(--muted); letter-spacing: 2px; font-weight: 600; }
-  .session .user { font-size: 16px; color: var(--navy-1); font-weight: 700; margin-top: 2px; }
-
-  /* === HERO CARD === */
   .hero {
-    background: linear-gradient(135deg, var(--navy-1) 0%, var(--navy-2) 60%, var(--navy-3) 100%);
-    border-radius: 10px 10px 0 0;
-    padding: 40px 44px;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
     color: #fff;
-    position: relative;
+    padding: 22px 26px;
+    border-radius: 10px 10px 0 0;
+  }
+  .hero .crumb {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .hero h1 { margin: 0; font-size: 21px; font-weight: 600; }
+  .hero p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+
+  .card {
+    background: var(--card);
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     overflow: hidden;
   }
-  .hero::before {
-    content: ''; position: absolute; right: -40px; top: -40px;
-    width: 200px; height: 200px; border-radius: 50%;
-    background: rgba(255,255,255,0.05);
+  .section { padding: 22px 26px; border-bottom: 1px solid var(--line); }
+  .section:last-child { border-bottom: 0; }
+  .section h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: var(--brand);
+    font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
   }
-  .hero::after {
-    content: ''; position: absolute; right: 60px; bottom: -60px;
-    width: 140px; height: 140px; border-radius: 50%;
-    background: rgba(139,195,74,0.08);
-  }
-  .step-label {
-    font-size: 12px; color: var(--green); letter-spacing: 3px;
-    font-weight: 700; margin-bottom: 14px;
-  }
-  .hero h1 {
-    font-size: 44px; font-weight: 700; line-height: 1.1;
-    margin-bottom: 18px; letter-spacing: -1px;
-  }
-  .hero h1 .accent { color: var(--green); }
-  .hero p { font-size: 15px; max-width: 580px; opacity: 0.92; line-height: 1.6; }
-
-  /* Green divider under hero */
-  .hero-divider { height: 4px; background: var(--green); }
-
-  /* === MAIN PANEL === */
-  .panel {
-    background: #fff;
-    border-radius: 0 0 10px 10px;
-    padding: 36px 44px 44px;
-    box-shadow: 0 4px 14px rgba(14,42,68,0.08);
+  .section h2::before {
+    content: ""; width: 4px; height: 16px; background: var(--brand); border-radius: 2px;
   }
 
-  /* Progress */
-  .progress-wrap { margin-bottom: 36px; }
-  .progress-head {
-    display: flex; justify-content: space-between;
-    font-size: 11px; letter-spacing: 2px; font-weight: 700;
-    color: var(--muted); margin-bottom: 10px;
+  label.fld {
+    display: block; font-size: 12px; color: var(--muted);
+    margin-bottom: 4px; font-weight: 500;
   }
-  .progress-head .count { color: var(--navy-1); font-size: 13px; }
-  .progress-bar {
-    height: 4px; background: var(--line); border-radius: 2px; overflow: hidden;
+  input, select, textarea {
+    width: 100%; padding: 11px 13px;
+    border: 1px solid var(--line); border-radius: 6px;
+    font-size: 14px; font-family: inherit;
+    background: #fff; color: var(--ink);
   }
-  .progress-fill {
-    height: 100%; background: linear-gradient(90deg, var(--green-dark), var(--green));
-    width: 12.5%; transition: width 0.3s ease;
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
   }
+  textarea { resize: vertical; min-height: 70px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+  .full { grid-column: 1 / -1; }
 
-  /* === FIELDS === */
-  .field {
-    border-top: 1px solid var(--line);
-    padding: 28px 0;
-  }
-  .field:first-of-type { border-top: none; padding-top: 0; }
-  .field-num {
-    display: flex; align-items: center; gap: 14px;
-    margin-bottom: 10px;
-  }
-  .field-num .num {
-    font-size: 11px; color: var(--green); letter-spacing: 3px;
-    font-weight: 700;
-  }
-  .field-num .line { flex: 0 0 40px; height: 1px; background: var(--green); }
-  .field-title {
-    font-size: 26px; font-weight: 700; color: var(--navy-1);
-    margin-bottom: 6px; letter-spacing: -0.5px;
-  }
-  .field-title .req { color: var(--green); }
-  .field-help {
-    font-size: 13px; color: var(--muted); margin-bottom: 18px;
-  }
-
-  /* Underline input */
-  .u-input {
-    width: 100%; padding: 12px 0; font-size: 16px;
-    border: none; border-bottom: 1px solid var(--line);
-    background: transparent; font-family: inherit; color: var(--text);
-    transition: border-color 0.2s;
-  }
-  .u-input:focus { outline: none; border-bottom-color: var(--green); }
-  .u-input::placeholder { color: #b5bcc5; }
-  select.u-input {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238BC34A' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 4px center;
-    padding-right: 24px;
-    cursor: pointer;
-  }
-  textarea.u-input { resize: vertical; min-height: 60px; border: 1px solid var(--line); padding: 12px; border-radius: 6px; }
-  textarea.u-input:focus { border-color: var(--green); }
-
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  @media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
-
-  /* === ACTIONS === */
-  .actions {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--line);
-    gap: 12px; flex-wrap: wrap;
-  }
   .btn {
-    padding: 14px 28px; font-size: 13px; font-weight: 700;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    border: none; border-radius: 4px; cursor: pointer;
-    transition: all 0.2s; font-family: inherit;
+    width: 100%; padding: 13px;
+    background: var(--brand); color: #fff; border: 0;
+    border-radius: 6px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
   }
-  .btn-primary {
-    background: var(--navy-1); color: #fff;
+  .btn:hover { background: var(--brand-dark); }
+  .btn.ghost { background: #fff; color: var(--brand); border: 1px solid var(--brand); }
+  .btn.ghost:hover { background: rgba(24,95,165,0.08); }
+  .btn.small { width: auto; padding: 8px 14px; font-size: 13px; }
+
+  .notice {
+    background: #eef4fb; border: 1px solid #cfe0f2;
+    padding: 10px 14px; border-radius: 6px;
+    font-size: 12.5px; color: var(--brand-dark);
   }
-  .btn-primary:hover { background: var(--navy-2); transform: translateY(-1px); }
-  .btn-ghost {
-    background: transparent; color: var(--muted);
+  .notice.warn { background: #fffdf4; border-color: #f2dcae; color: var(--warn); }
+  .notice.err { background: #fdeeee; border-color: #f0c4c4; color: var(--alert); }
+
+  .lock-icon {
+    font-size: 28px; color: var(--brand);
+    text-align: center; display: block; margin: 4px 0 12px;
+  }
+
+  .steps {
+    display: flex; gap: 8px; margin-bottom: 18px;
+    font-size: 12px;
+  }
+  .steps .step {
+    flex: 1; padding: 8px 10px;
+    border-radius: 6px; background: var(--soft);
+    border: 1px solid var(--line); text-align: center;
+    color: var(--muted); font-weight: 500;
+  }
+  .steps .step.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .steps .step.done { background: #d6ead9; color: var(--ok); border-color: #b5d5ba; }
+
+  .cust-summary {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+    background: var(--soft);
     border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
   }
-  .btn-ghost:hover { color: var(--navy-1); border-color: var(--navy-1); }
-  .btn-green {
-    background: var(--green); color: #fff;
-  }
-  .btn-green:hover { background: var(--green-dark); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  @media (max-width: 600px) { .cust-summary { grid-template-columns: 1fr; } }
+  .cust-summary .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .cust-summary .val { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .cust-summary .val.big { font-size: 20px; color: var(--alert); }
 
-  /* === STEP PANELS === */
-  .step-panel { display: none; }
-  .step-panel.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  .inv-list { list-style: none; padding: 0; margin: 0; }
+  .inv-item {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .inv-head {
+    padding: 14px 16px;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .inv-head:hover { background: var(--soft); }
+  .inv-head .no { font-weight: 600; font-size: 14px; color: var(--brand); }
+  .inv-head .date { font-size: 12px; color: var(--muted); }
+  .inv-head .amt { font-weight: 700; font-size: 15px; text-align: right; }
+  .inv-head .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    color: #fff; font-weight: 600; white-space: nowrap; text-align: center;
+  }
+  .badge.overdue { background: var(--alert); }
+  .badge.due-soon { background: var(--warn); }
+  .badge.ok { background: var(--ok); }
+  .badge.paid { background: #888; }
+  @media (max-width: 520px) {
+    .inv-head { grid-template-columns: 1fr 1fr; }
+    .inv-head .date { grid-column: 1 / 2; }
+    .inv-head .amt { grid-column: 2 / 3; }
+    .inv-head .badge { grid-column: 1 / -1; text-align: left; justify-self: start; }
+  }
+  .inv-body {
+    display: none;
+    padding: 14px 16px;
+    border-top: 1px dashed var(--line);
+    background: var(--soft);
+    font-size: 13px;
+  }
+  .inv-item.open .inv-body { display: block; }
+  .inv-body table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  .inv-body td { padding: 4px 0; font-size: 12.5px; }
+  .inv-body td.lbl { color: var(--muted); width: 38%; }
+  .inv-body td.val { font-weight: 500; }
+  .refchip {
+    display: inline-block;
+    background: #e8eef6;
+    color: var(--brand-dark);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 4px;
+    font-family: monospace;
   }
 
-  /* === PREVIEW === */
-  .email-preview {
-    background: var(--bg); padding: 24px; border-radius: 8px;
-    border: 1px solid var(--line); margin-top: 16px;
+  .tabs {
+    display: flex; gap: 6px; margin: 14px 0;
+    background: var(--soft); padding: 4px; border-radius: 8px;
   }
-  .email-card {
-    max-width: 580px; margin: 0 auto; background: #fff;
-    border-radius: 6px; overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  .tabs button {
+    flex: 1; padding: 9px; border: 0; background: transparent;
+    cursor: pointer; font-size: 13px; color: var(--muted);
+    border-radius: 6px; font-weight: 500; font-family: inherit;
   }
-  .ec-head { background: var(--navy-1); color: #fff; padding: 18px 24px; }
-  .ec-head h3 { font-size: 17px; margin-bottom: 3px; }
-  .ec-head p { font-size: 12px; opacity: 0.85; }
-  .ec-body { padding: 22px 24px; font-size: 13px; line-height: 1.55; }
-  .ec-box {
-    background: #f9fafc; border: 1px solid var(--line);
-    border-radius: 5px; padding: 14px; margin: 14px 0; font-size: 12px;
+  .tabs button.active {
+    background: #fff; color: var(--brand); font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
-  .ec-box h4 { color: var(--navy-1); margin-bottom: 8px; font-size: 13px; }
-  .ec-box table { width: 100%; }
-  .ec-box td { padding: 3px 0; }
-  .ec-box td:first-child { color: var(--muted); width: 45%; }
-  .ec-confirm {
-    background: #fff8e1; border-left: 3px solid var(--green);
-    padding: 12px 14px; border-radius: 4px; margin: 14px 0; font-size: 12px;
-  }
-  .ec-confirm button {
-    background: var(--navy-1); color: #fff; padding: 9px 18px;
-    border: none; border-radius: 4px; font-size: 12px; font-weight: 600;
-    margin-top: 8px; cursor: pointer;
-  }
-  .ec-sign { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; font-size: 12px; }
+  .pane { display: none; }
+  .pane.active { display: block; }
 
-  /* === SUMMARY CARDS (Step 3) === */
-  .summary-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-    margin-bottom: 24px;
-  }
-  .sum-card {
-    background: #f9fafc; border-left: 3px solid var(--green);
-    padding: 14px 18px; border-radius: 4px;
-  }
-  .sum-card .k {
-    font-size: 10px; letter-spacing: 2px; color: var(--muted);
-    font-weight: 700; margin-bottom: 4px;
-  }
-  .sum-card .v { font-size: 15px; color: var(--navy-1); font-weight: 600; }
+  .hidden { display: none !important; }
 
-  /* Toast */
+  .foot {
+    text-align: center; margin-top: 14px;
+    font-size: 11px; color: var(--muted);
+  }
+  .foot a { color: var(--brand); text-decoration: none; }
+
+  .contact-info {
+    padding: 14px 26px;
+    background: var(--soft);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    border-top: 1px solid var(--line);
+  }
+  .contact-info a { color: var(--brand); text-decoration: none; font-weight: 500; }
+
   .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--navy-1); color: #fff;
-    padding: 14px 22px; border-radius: 6px; font-size: 13px;
-    opacity: 0; transition: opacity 0.3s; pointer-events: none;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 999;
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--ok); color: #fff;
+    padding: 10px 16px; border-radius: 6px;
+    font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.25s; z-index: 99;
   }
-  .toast.show { opacity: 1; }
-
-  /* Modal */
-  .modal-bg {
-    display: none; position: fixed; inset: 0;
-    background: rgba(14,42,68,0.6); z-index: 500;
-    align-items: center; justify-content: center; padding: 20px;
-  }
-  .modal-bg.show { display: flex; }
-  .modal {
-    background: #fff; border-radius: 10px; padding: 36px;
-    max-width: 480px; width: 100%;
-  }
-  .modal h2 { color: var(--navy-1); margin-bottom: 8px; font-size: 24px; }
-  .modal p { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.err { background: var(--alert); }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrap">
 
-  <!-- ============ TOP BAR ============ -->
-  <div class="topbar">
-    <div class="brand">
-      <div class="logo-circle"></div>
-      <div class="brand-text">
-        <div class="name">vie<span class="ac">novo</span></div>
-        <div class="sub">ACCOUNTS RECEIVABLE</div>
-      </div>
-    </div>
-    <div class="session">
-      <div class="label">PROCESS OWNER</div>
-      <div class="user" id="sessionUser">Cris-An Urtezuela</div>
-    </div>
-  </div>
-
-  <!-- ============ HERO ============ -->
   <div class="hero">
-    <div class="step-label" id="stepLabel">COLLECTION WORKFLOW • STEP 1 OF 3</div>
-    <h1 id="stepTitle">Customer <span class="accent">Details.</span></h1>
-    <p id="stepDesc">Select the customer account and confirm delivery info. Master-data fields will auto-populate where available.</p>
+    <div class="crumb">Vienovo Inc. · Accounts Receivable</div>
+    <h1>Customer Billing Statement</h1>
+    <p>Secure per-customer access · OINV / ODLN / ORDR read-only lookup</p>
   </div>
-  <div class="hero-divider"></div>
 
-  <!-- ============ PANEL ============ -->
-  <div class="panel">
+  <div class="card">
 
-    <!-- Progress -->
-    <div class="progress-wrap">
-      <div class="progress-head">
-        <span>COMPLETION</span>
-        <span class="count" id="progCount">1 / 8 FIELDS</span>
+    <div class="section" id="stepSection">
+      <div class="steps" id="stepIndicator">
+        <div class="step active" data-step="1">1. Validate Link</div>
+        <div class="step" data-step="2">2. Verify Name</div>
+        <div class="step" data-step="3">3. OTP Confirm</div>
+        <div class="step" data-step="4">4. View Statement</div>
       </div>
-      <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
     </div>
 
-    <!-- =================================================
-         STEP 1 — CUSTOMER
-         ================================================= -->
-    <div class="step-panel active" data-step="1">
-
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 01</span><span class="line"></span></div>
-        <div class="field-title">Customer <span class="req">*</span></div>
-        <div class="field-help">Select the customer account. Master-data details will populate automatically below.</div>
-        <input type="text" class="u-input" id="f_customer" placeholder="e.g. ABC Trading Corp." list="customerList" oninput="update()">
-        <datalist id="customerList">
-          <option value="ABC Trading Corp.">
-          <option value="Pacific Merchandise Inc.">
-          <option value="Luzon Distributors Co.">
-          <option value="Metro Logistics Ltd.">
-          <option value="Visayan Supply Chain">
-        </datalist>
+    <div class="section" id="step1">
+      <h2>Step 1 — Link Validation</h2>
+      <p id="step1Msg" style="font-size:13.5px; margin:0 0 12px;">Sinusuri po ang inyong secure link...</p>
+      <div id="step1Bad" class="notice err hidden">
+        <b>Invalid or expired link.</b><br>
+        Ang link na ito ay hindi valid. Pakitawag po ang Vienovo AR desk para humingi ng bagong secure link.
       </div>
-
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 02</span><span class="line"></span></div>
-        <div class="field-title">Customer Email <span class="req">*</span></div>
-        <div class="field-help">Primary recipient of the collection email. Use the AR contact on file.</div>
-        <input type="email" class="u-input" id="f_email" placeholder="e.g. accounts@customer.ph" oninput="update()">
+      <div id="step1Good" class="notice hidden">
+        <b>Link verified.</b> This statement is issued for: <span id="step1Cust"></span>
       </div>
-
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 03</span><span class="line"></span></div>
-        <div class="field-title">Delivery Receipt Number</div>
-        <div class="field-help">DR number associated with the invoice being followed up.</div>
-        <input type="text" class="u-input" id="f_dr" placeholder="e.g. DR-88421" oninput="update()">
-      </div>
-
+      <button class="btn small" id="proceedTo2" style="margin-top:10px;" disabled>Proceed to Name Verification</button>
     </div>
 
-    <!-- =================================================
-         STEP 2 — INVOICE
-         ================================================= -->
-    <div class="step-panel" data-step="2">
+    <div class="section hidden" id="step2">
+      <h2>Step 2 — Name Verification</h2>
+      <span class="lock-icon">&#128274;</span>
+      <p style="font-size:13.5px; margin:0 0 14px;">
+        Para sa inyong seguridad, pakisulat po ang <b>registered business name</b> o <b>authorized contact name</b>
+        na naka-file sa Vienovo. Dapat tumugma ito sa account para ma-grant ang access.
+      </p>
+      <label class="fld">Registered Business Name / Authorized Contact</label>
+      <input id="nameInput" placeholder="e.g., ARACO Poultry Corp / Juan Dela Cruz" />
+      <div id="nameErr" class="notice err hidden" style="margin-top:10px;">
+        Hindi tumugma sa record. Paki-verify po ang spelling, o tumawag sa Vienovo AR desk.
+        <br><small>Attempts remaining: <span id="attemptsLeft">3</span></small>
+      </div>
+      <button class="btn" id="verifyName" style="margin-top:14px;">Verify Name</button>
+    </div>
 
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 04</span><span class="line"></span></div>
-        <div class="field-title">Invoice Number <span class="req">*</span></div>
-        <div class="field-help">SAP B1 A/R invoice reference.</div>
-        <input type="text" class="u-input" id="f_invno" placeholder="e.g. INV-2026-04521" oninput="update()">
+    <div class="section hidden" id="step3">
+      <h2>Step 3 — OTP Confirmation</h2>
+      <p style="font-size:13.5px; margin:0 0 12px;">
+        Nagpadala kami ng 6-digit code sa inyong registered email / mobile:
+        <b id="otpDest">&lt;registered contact&gt;</b>
+      </p>
+      <div class="notice warn" style="margin-bottom:12px;">
+        <b>Demo mode:</b> ang OTP para sa prototype na ito ay <code style="background:#fff;padding:2px 6px;border-radius:3px;">123456</code>.
+        Sa production, galing ito sa SMS/email gateway.
+      </div>
+      <label class="fld">Enter 6-digit OTP</label>
+      <input id="otpInput" maxlength="6" placeholder="123456" inputmode="numeric" pattern="[0-9]*" />
+      <div id="otpErr" class="notice err hidden" style="margin-top:10px;">Maling OTP. Subukan po ulit.</div>
+      <button class="btn" id="verifyOtp" style="margin-top:14px;">Confirm & View Statement</button>
+      <button class="btn ghost small" id="resendOtp" style="margin-top:8px;">Resend OTP</button>
+    </div>
+
+    <div class="section hidden" id="step4">
+      <h2>Your Outstanding Statement</h2>
+
+      <div class="cust-summary">
+        <div>
+          <div class="lbl">Account</div>
+          <div class="val" id="sCustName">—</div>
+          <div style="font-size:11px; color: var(--muted); font-family: monospace;" id="sCustCode">—</div>
+        </div>
+        <div>
+          <div class="lbl">Open Invoices</div>
+          <div class="val" id="sInvCount">—</div>
+        </div>
+        <div>
+          <div class="lbl">Total Outstanding</div>
+          <div class="val big" id="sTotal">PHP —</div>
+        </div>
       </div>
 
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 05</span><span class="line"></span></div>
-        <div class="field-title">Invoice & Due Dates <span class="req">*</span></div>
-        <div class="field-help">Used to calculate days overdue in the reminder message.</div>
-        <div class="row2">
+      <div class="notice">
+        <b>Paalala:</b> I-tap/click po ang bawat invoice sa ibaba para makita ang full breakdown
+        (Sales Order, Delivery Receipt, driver, at amount details).
+      </div>
+
+      <h3 style="font-size:14px; margin:18px 0 10px; color: var(--ink);">Invoices</h3>
+      <ul class="inv-list" id="invList"></ul>
+
+      <h3 style="font-size:14px; margin:22px 0 6px; color: var(--ink);">Your Response</h3>
+      <p style="font-size:12.5px; color: var(--muted); margin:0 0 10px;">
+        Piliin po kung alin ang inyong gagawin para sa naka-pili na invoice(s).
+      </p>
+
+      <div class="tabs" id="tabs">
+        <button data-pane="commit" class="active">Commit to Pay</button>
+        <button data-pane="proof">Submit Proof</button>
+        <button data-pane="dispute">Dispute / Inquiry</button>
+      </div>
+
+      <div class="pane active" id="pane-commit">
+        <div class="row">
           <div>
-            <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">INVOICE DATE</div>
-            <input type="date" class="u-input" id="f_invdate" oninput="update()">
+            <label class="fld">Commitment Date</label>
+            <input id="commitDate" type="date" />
           </div>
           <div>
-            <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">DUE DATE</div>
-            <input type="date" class="u-input" id="f_duedate" oninput="update()">
+            <label class="fld">Payment Mode</label>
+            <select id="commitMode">
+              <option value="">— Select —</option>
+              <option>Bank Transfer (BDO)</option>
+              <option>Check</option>
+              <option>GCash</option>
+              <option>Cash Pick-up</option>
+            </select>
+          </div>
+          <div class="full">
+            <label class="fld">Coverage</label>
+            <select id="commitCoverage">
+              <option>Full amount of selected invoice(s)</option>
+              <option>Partial payment</option>
+            </select>
+          </div>
+          <div class="full">
+            <label class="fld">Notes (optional)</label>
+            <textarea id="commitNotes" placeholder="Magbabayad po kami on the committed date. Salamat."></textarea>
           </div>
         </div>
       </div>
 
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 06</span><span class="line"></span></div>
-        <div class="field-title">Amount Due (PHP) <span class="req">*</span></div>
-        <div class="field-help">Outstanding balance. Format with thousands separators automatically.</div>
-        <input type="number" class="u-input" id="f_amount" placeholder="e.g. 125450" oninput="update()">
-      </div>
-
-    </div>
-
-    <!-- =================================================
-         STEP 3 — TONE & SEND
-         ================================================= -->
-    <div class="step-panel" data-step="3">
-
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 07</span><span class="line"></span></div>
-        <div class="field-title">Reminder Tone <span class="req">*</span></div>
-        <div class="field-help">Escalation level. Adjusts greeting language in the generated email.</div>
-        <select class="u-input" id="f_tone" onchange="update()">
-          <option value="gentle">Gentle — 1st reminder</option>
-          <option value="firm">Firm — 2nd reminder</option>
-          <option value="final">Final notice</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <div class="field-num"><span class="num">FIELD 08</span><span class="line"></span></div>
-        <div class="field-title">Additional Notes</div>
-        <div class="field-help">Optional message appended before the signature. Leave blank to use default copy.</div>
-        <textarea class="u-input" id="f_notes" placeholder="e.g. Please confirm receipt of this reminder..." oninput="update()"></textarea>
-      </div>
-
-      <!-- Summary -->
-      <div class="field">
-        <div class="field-num"><span class="num">REVIEW</span><span class="line"></span></div>
-        <div class="field-title">Review & Send</div>
-        <div class="field-help">Confirm the details below. The email preview shows exactly what the customer will receive.</div>
-
-        <div class="summary-grid">
-          <div class="sum-card"><div class="k">TO</div><div class="v" id="s_to">—</div></div>
-          <div class="sum-card"><div class="k">INVOICE</div><div class="v" id="s_inv">—</div></div>
-          <div class="sum-card"><div class="k">AMOUNT</div><div class="v" id="s_amt">PHP —</div></div>
-          <div class="sum-card"><div class="k">DAYS OVERDUE</div><div class="v" id="s_over">—</div></div>
-        </div>
-
-        <div class="email-preview">
-          <div class="email-card" id="emailPreview"></div>
+      <div class="pane" id="pane-proof">
+        <div class="row">
+          <div><label class="fld">Date Paid</label><input id="paidDate" type="date" /></div>
+          <div><label class="fld">Amount Paid</label><input id="paidAmount" type="number" step="0.01" placeholder="0.00" /></div>
+          <div><label class="fld">Mode</label>
+            <select id="paidMode">
+              <option value="">— Select —</option>
+              <option>Bank Transfer</option>
+              <option>Check</option>
+              <option>GCash</option>
+              <option>Cash</option>
+            </select>
+          </div>
+          <div><label class="fld">Reference No.</label><input id="paidRef" placeholder="Txn / Check / GCash Ref" /></div>
+          <div class="full"><label class="fld">Notes</label><textarea id="paidNotes" placeholder="I-attach ang receipt/screenshot sa email pagkatapos."></textarea></div>
         </div>
       </div>
 
-    </div>
-
-    <!-- ============ ACTIONS ============ -->
-    <div class="actions">
-      <button class="btn btn-ghost" id="btnBack" onclick="goBack()">← Back</button>
-      <div style="display:flex; gap:10px;">
-        <button class="btn btn-ghost" onclick="saveDraft()">Save Draft</button>
-        <button class="btn btn-primary" id="btnNext" onclick="goNext()">Continue →</button>
+      <div class="pane" id="pane-dispute">
+        <div class="row">
+          <div class="full">
+            <label class="fld">Reason</label>
+            <select id="dispReason">
+              <option value="">— Select —</option>
+              <option>Amount mismatch</option>
+              <option>Invoice not received</option>
+              <option>Goods not yet delivered</option>
+              <option>Already paid</option>
+              <option>Request for extension</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="full">
+            <label class="fld">Details</label>
+            <textarea id="dispDetails" placeholder="Pakilagay po ang buong paliwanag..."></textarea>
+          </div>
+        </div>
       </div>
+
+      <button class="btn" id="btnSubmit" style="margin-top:16px;">Submit Response to Vienovo AR</button>
+      <button class="btn ghost small" id="btnPrint" style="margin-top:8px;">Print / Save Statement</button>
+    </div>
+
+    <div class="contact-info">
+      Questions? Contact <a href="mailto:ar@vienovo.ph">ar@vienovo.ph</a> ·
+      <a href="tel:+6321234567">(02) 1234-5678</a><br>
+      Biller: <span id="billerRef">Ms. Cris-an D. — AR Desk</span>
     </div>
 
   </div>
-</div>
 
-<!-- Modal -->
-<div class="modal-bg" id="modal">
-  <div class="modal">
-    <h2>Confirm Payment Date</h2>
-    <p>Paki-pili po ng petsa kung kailan inyong babayaran ang invoice.</p>
-    <div style="margin-bottom:16px;">
-      <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">COMMITTED PAYMENT DATE</div>
-      <input type="date" class="u-input" id="commit_date">
-    </div>
-    <div style="margin-bottom:20px;">
-      <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">REMARKS (OPTIONAL)</div>
-      <textarea class="u-input" id="commit_remarks" placeholder="e.g. Ipo-process sa susunod na check run..."></textarea>
-    </div>
-    <div style="display:flex; gap:10px; justify-content:flex-end;">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-green" onclick="submitCommit()">Submit Commitment</button>
-    </div>
+  <div class="foot">
+    &copy; Vienovo Inc. · Secure link. Data is read-only from SAP (OINV, ODLN, ORDR).
+    Never shares across customers. No persistent cookies.
   </div>
+
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast">Success</div>
 
 <script>
-// ======================================================
-// State
-// ======================================================
-var currentStep = 1;
-var totalSteps  = 3;
-var stepMeta = {
-  1: { label: 'COLLECTION WORKFLOW • STEP 1 OF 3', title: 'Customer <span class="accent">Details.</span>',
-       desc:  'Select the customer account and confirm delivery info. Master-data fields will auto-populate where available.' },
-  2: { label: 'COLLECTION WORKFLOW • STEP 2 OF 3', title: 'Invoice <span class="accent">Entry.</span>',
-       desc:  'Capture the invoice reference, dates, and outstanding amount. These details drive the reminder calculations.' },
-  3: { label: 'COLLECTION WORKFLOW • STEP 3 OF 3', title: 'Review & <span class="accent">Send.</span>',
-       desc:  'Set the tone, add any custom notes, then review the generated email before dispatching to the customer.' }
+const MOCK_DB = {
+  "v1.CA000075.a9f3b2": {
+    cardCode: "CA000075",
+    cardName: "ARACO POULTRY & LIVESTOCK CORPORATION",
+    shortMatch: ["araco", "araco poultry"],
+    contact: "j***@araco.ph / 09XX-***-1780",
+    address: "BACOLOD, PHILIPPINES",
+    invoices: [
+      { no: "133674", date: "2024-10-15", due: "2024-12-14", amount: 646000, vat: 158691.52, so: "SO-38", dr: "DR-126307", plate: "NHE 1247", driver: "RYAN LAVARITE", status: "overdue" },
+      { no: "133675", date: "2024-10-15", due: "2024-12-14", amount: 475000, vat: 116684.94, so: "SO-38", dr: "DR-126312", plate: "NAJ 7342", driver: "DARIO AGUILLAR", status: "overdue" },
+      { no: "133676", date: "2024-10-16", due: "2024-12-15", amount: 190000, vat: 46673.98, so: "SO-47", dr: "DR-126313", plate: "NCE 6097", driver: "JOHN MAR SEGOVIA", status: "overdue" },
+      { no: "133677", date: "2024-10-16", due: "2024-12-15", amount: 551000, vat: 135354.53, so: "SO-47", dr: "DR-126314", plate: "NHE 1427", driver: "RYAN LAVARITE", status: "overdue" }
+    ]
+  },
+  "v1.CA000145.c7e1d4": {
+    cardCode: "CA000145",
+    cardName: "D & J POULTRY SUPPLY",
+    shortMatch: ["d & j", "d&j", "dj poultry", "d and j"],
+    contact: "d***@djpoultry.ph / 09XX-***-3532",
+    address: "PHILIPPINES",
+    invoices: [
+      { no: "133284", date: "2024-11-01", due: "2024-11-16", amount: 282690.80, vat: 68520.81, so: "SO-122", dr: "DR-120140", plate: "CBJ 5990", driver: "JERIC MIGUEL", status: "overdue" }
+    ]
+  },
+  "v1.CA000309.f5b8a1": {
+    cardCode: "CA000309",
+    cardName: "JUDITH FEEDS & POULTRY SUPPLY",
+    shortMatch: ["judith", "judith feeds"],
+    contact: "ju***@judithfeeds.ph / 09XX-***-7585",
+    address: "BAGAC, BATAAN, PHILIPPINES",
+    invoices: [
+      { no: "61950", date: "2025-01-10", due: "2025-02-09", amount: 207290, vat: 55666.06, so: "SO-121", dr: "DR-84467", plate: "CTN 898", driver: "JOMAR DELA CRUZ", status: "due-soon" }
+    ]
+  }
 };
 
-function $(id) { return document.getElementById(id); }
+const $ = id => document.getElementById(id);
 
-// ======================================================
-// Navigation
-// ======================================================
-function showStep(n) {
-  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.querySelector('[data-step="' + n + '"]').classList.add('active');
-  currentStep = n;
-  $('stepLabel').textContent = stepMeta[n].label;
-  $('stepTitle').innerHTML = stepMeta[n].title;
-  $('stepDesc').textContent = stepMeta[n].desc;
-  $('btnBack').style.visibility = (n === 1) ? 'hidden' : 'visible';
-  $('btnNext').textContent = (n === totalSteps) ? 'Send Email →' : 'Continue →';
-  if (n === totalSteps) $('btnNext').classList.replace('btn-primary', 'btn-green');
-  else $('btnNext').classList.replace('btn-green', 'btn-primary');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  update();
+function fmtPHP(n) {
+  if (n === undefined || n === null || isNaN(n)) return 'PHP —';
+  return 'PHP ' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-
-function goNext() {
-  if (currentStep < totalSteps) {
-    showStep(currentStep + 1);
-  } else {
-    sendEmail();
-  }
-}
-
-function goBack() {
-  if (currentStep > 1) showStep(currentStep - 1);
-}
-
-// ======================================================
-// Completion tracking
-// ======================================================
-function calcProgress() {
-  var fields = ['f_customer','f_email','f_dr','f_invno','f_invdate','f_duedate','f_amount','f_tone'];
-  var filled = fields.filter(id => $(id) && $(id).value).length;
-  var pct = (filled / fields.length) * 100;
-  $('progFill').style.width = pct + '%';
-  $('progCount').textContent = filled + ' / ' + fields.length + ' FIELDS';
-  return filled;
-}
-
-// ======================================================
-// Utilities
-// ======================================================
 function fmtDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const dt = new Date(d);
+  return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
 }
-function fmtMoney(n) {
-  if (!n) return '—';
-  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function daysFromDue(d) {
+  if (!d) return null;
+  const due = new Date(d); const today = new Date();
+  today.setHours(0,0,0,0); due.setHours(0,0,0,0);
+  return Math.floor((today - due) / 86400000);
 }
-function daysOverdue(due) {
-  if (!due) return 0;
-  return Math.max(0, Math.floor((new Date() - new Date(due)) / 86400000));
-}
-function toneGreeting(t) {
-  if (t === 'firm')  return 'Ito ay <b>follow-up</b> ukol sa inyong overdue invoice. Hinihiling po namin ang inyong agarang atensyon.';
-  if (t === 'final') return 'Ito ay <b>FINAL NOTICE</b> ukol sa inyong matagal nang overdue invoice. Kailangan po naming ma-resolve ito upang maiwasan ang eskalasyon.';
-  return 'Magandang araw po. Ito ay isang magalang na paalala ukol sa inyong outstanding invoice sa amin.';
-}
-
-// ======================================================
-// Render preview + summary
-// ======================================================
-function update() {
-  calcProgress();
-
-  var customer = $('f_customer').value || '[Customer]';
-  var email    = $('f_email').value    || '[email]';
-  var drNum    = $('f_dr').value       || '—';
-  var invno    = $('f_invno').value    || '[INV-####]';
-  var invdate  = fmtDate($('f_invdate').value);
-  var duedate  = fmtDate($('f_duedate').value);
-  var amount   = fmtMoney($('f_amount').value);
-  var tone     = $('f_tone').value;
-  var notes    = $('f_notes').value;
-  var overdue  = daysOverdue($('f_duedate').value);
-  var sender   = $('sessionUser').textContent;
-
-  // Summary cards
-  $('s_to').textContent   = email;
-  $('s_inv').textContent  = invno;
-  $('s_amt').textContent  = 'PHP ' + amount;
-  $('s_over').textContent = overdue + (overdue === 1 ? ' day' : ' days');
-
-  // Email preview
-  $('emailPreview').innerHTML = `
-    <div class="ec-head">
-      <h3>Vienovo — Accounts Receivable</h3>
-      <p>Invoice Reminder / Payment Follow-up</p>
-    </div>
-    <div class="ec-body">
-      <p>Dear <strong>${customer}</strong>,</p>
-      <p>${toneGreeting(tone)}</p>
-      <div class="ec-box">
-        <h4>Invoice Details</h4>
-        <table>
-          <tr><td>Invoice Number:</td><td><strong>${invno}</strong></td></tr>
-          <tr><td>Invoice Date:</td><td>${invdate}</td></tr>
-          <tr><td>Due Date:</td><td><strong style="color:#A32D2D;">${duedate}</strong></td></tr>
-          <tr><td>Amount Due:</td><td><strong>PHP ${amount}</strong></td></tr>
-          <tr><td>Days Overdue:</td><td>${overdue} days</td></tr>
-          <tr><td>DR Reference:</td><td>${drNum}</td></tr>
-        </table>
-      </div>
-      <div class="ec-confirm">
-        <strong>Kindly confirm your payment schedule.</strong>
-        <br><button onclick="openModal()">Confirm Payment Date</button>
-      </div>
-      ${notes ? `<p style="font-style:italic; color:#555;">${notes}</p>` : ''}
-      <div class="ec-sign">
-        <p>Salamat po sa inyong patuloy na pagtitiwala.</p>
-        <p style="margin-top:10px;"><strong>${sender}</strong><br>Accounts Receivable · Vienovo Inc.</p>
-      </div>
-    </div>
-  `;
+function toast(msg, err = false) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.toggle('err', err);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ======================================================
-// Actions
-// ======================================================
-function saveDraft() { toast('Draft saved locally.'); }
+function setStep(n, done = []) {
+  document.querySelectorAll('.steps .step').forEach(s => {
+    const num = Number(s.dataset.step);
+    s.classList.remove('active', 'done');
+    if (done.includes(num)) s.classList.add('done');
+    else if (num === n) s.classList.add('active');
+  });
+}
+function showSection(id) {
+  ['step1','step2','step3','step4'].forEach(s => $(s).classList.add('hidden'));
+  $(id).classList.remove('hidden');
+}
 
-function sendEmail() {
-  if (!$('f_customer').value || !$('f_email').value || !$('f_invno').value) {
-    toast('Please complete required fields before sending.');
+let currentCustomer = null;
+let currentToken = null;
+
+function validateToken() {
+  const hash = location.hash;
+  let token = null;
+  if (hash.startsWith('#t=')) token = hash.slice(3);
+  if (!token) token = 'v1.CA000075.a9f3b2';
+  currentToken = token;
+
+  const record = MOCK_DB[token];
+  if (!record) {
+    $('step1Msg').textContent = '';
+    $('step1Bad').classList.remove('hidden');
+    $('proceedTo2').disabled = true;
     return;
   }
-  var to = $('f_email').value;
-  var subject = 'Payment Reminder — Invoice ' + $('f_invno').value;
-  var body = 'Dear ' + $('f_customer').value + ',\n\nMagandang araw po. Paalala po ukol sa Invoice ' + $('f_invno').value + ' (Due: ' + $('f_duedate').value + ', Amount: PHP ' + $('f_amount').value + ').\n\nPaki-confirm po ang payment schedule. Salamat po!\n\n' + $('sessionUser').textContent + '\nVienovo AR';
-  window.location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  toast('Opening email client...');
+  currentCustomer = record;
+  $('step1Msg').textContent = '';
+  $('step1Good').classList.remove('hidden');
+  $('step1Cust').textContent = record.cardName + ' (' + record.cardCode + ')';
+  $('proceedTo2').disabled = false;
 }
 
-function openModal() { $('modal').classList.add('show'); }
-function closeModal() { $('modal').classList.remove('show'); }
-function submitCommit() {
-  if (!$('commit_date').value) { toast('Paki-pili po ng date.'); return; }
-  toast('Commitment submitted: ' + fmtDate($('commit_date').value));
-  closeModal();
+$('proceedTo2').addEventListener('click', () => {
+  showSection('step2');
+  setStep(2, [1]);
+});
+
+let attemptsLeft = 3;
+$('verifyName').addEventListener('click', () => {
+  const input = $('nameInput').value.trim().toLowerCase();
+  if (!input) {
+    $('nameInput').focus();
+    return;
+  }
+  const ok = currentCustomer.shortMatch.some(m => input.includes(m.toLowerCase())) ||
+             input.includes(currentCustomer.cardName.toLowerCase().split(/[,&]/)[0].trim());
+  if (ok) {
+    $('nameErr').classList.add('hidden');
+    $('otpDest').textContent = currentCustomer.contact;
+    showSection('step3');
+    setStep(3, [1,2]);
+  } else {
+    attemptsLeft--;
+    $('attemptsLeft').textContent = attemptsLeft;
+    $('nameErr').classList.remove('hidden');
+    if (attemptsLeft <= 0) {
+      $('verifyName').disabled = true;
+      $('nameInput').disabled = true;
+      $('nameErr').innerHTML = '<b>Account locked.</b> Pakitawag po ang Vienovo AR Desk: (02) 1234-5678';
+    }
+  }
+});
+
+const DEMO_OTP = '123456';
+$('verifyOtp').addEventListener('click', () => {
+  const val = $('otpInput').value.trim();
+  if (val !== DEMO_OTP) {
+    $('otpErr').classList.remove('hidden');
+    return;
+  }
+  $('otpErr').classList.add('hidden');
+  renderStatement();
+  showSection('step4');
+  setStep(4, [1,2,3]);
+});
+$('resendOtp').addEventListener('click', () => toast('OTP resent (demo: 123456)'));
+
+function renderStatement() {
+  const c = currentCustomer;
+  $('sCustName').textContent = c.cardName;
+  $('sCustCode').textContent = c.cardCode + ' · ' + c.address;
+  $('sInvCount').textContent = c.invoices.length;
+  const total = c.invoices.reduce((s,i) => s + i.amount, 0);
+  $('sTotal').textContent = fmtPHP(total);
+
+  const list = $('invList');
+  list.innerHTML = '';
+  c.invoices.forEach((inv, idx) => {
+    const diff = daysFromDue(inv.due);
+    let badgeClass = 'ok', badgeText = '';
+    if (inv.status === 'paid') { badgeClass = 'paid'; badgeText = 'Paid'; }
+    else if (diff > 0) { badgeClass = 'overdue'; badgeText = diff + ' days overdue'; }
+    else if (diff === 0) { badgeClass = 'due-soon'; badgeText = 'Due today'; }
+    else if (diff < 0 && diff >= -7) { badgeClass = 'due-soon'; badgeText = 'Due in ' + Math.abs(diff) + 'd'; }
+    else { badgeClass = 'ok'; badgeText = 'Due in ' + Math.abs(diff) + 'd'; }
+
+    const li = document.createElement('li');
+    li.className = 'inv-item';
+    li.innerHTML = `
+      <div class="inv-head" data-i="${idx}">
+        <div>
+          <div class="no">Invoice #${inv.no}</div>
+          <div class="date">Issued: ${fmtDate(inv.date)}</div>
+        </div>
+        <div>
+          <div class="date">Due: ${fmtDate(inv.due)}</div>
+        </div>
+        <div class="amt">${fmtPHP(inv.amount)}</div>
+        <div><span class="badge ${badgeClass}">${badgeText}</span></div>
+      </div>
+      <div class="inv-body">
+        <table>
+          <tr><td class="lbl">Sales Order:</td><td class="val"><span class="refchip">${inv.so}</span></td></tr>
+          <tr><td class="lbl">Delivery Receipt:</td><td class="val"><span class="refchip">${inv.dr}</span></td></tr>
+          <tr><td class="lbl">Plate / Driver:</td><td class="val">${inv.plate} · ${inv.driver}</td></tr>
+          <tr><td class="lbl">Subtotal (ex-VAT):</td><td class="val">${fmtPHP(inv.amount - inv.vat)}</td></tr>
+          <tr><td class="lbl">VAT:</td><td class="val">${fmtPHP(inv.vat)}</td></tr>
+          <tr><td class="lbl"><b>Total:</b></td><td class="val"><b>${fmtPHP(inv.amount)}</b></td></tr>
+        </table>
+      </div>`;
+    list.appendChild(li);
+  });
+
+  list.querySelectorAll('.inv-head').forEach(h => {
+    h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+  });
 }
 
-function toast(msg) {
-  var t = $('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
+document.querySelectorAll('#tabs button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    $('pane-' + b.dataset.pane).classList.add('active');
+  });
+});
 
-// Init
-showStep(1);
+function activeTab() {
+  const b = document.querySelector('#tabs button.active');
+  return b ? b.dataset.pane : 'commit';
+}
+$('btnSubmit').addEventListener('click', () => {
+  const tab = activeTab();
+  const c = currentCustomer;
+  const lines = [
+    `Greetings Vienovo AR Team,`, '',
+    `This is a signed response from the secured Customer Billing Portal.`,
+    `Token: ${currentToken}`,
+    `Customer: ${c.cardName} (${c.cardCode})`, ''
+  ];
+  let subject = '';
+  if (tab === 'commit') {
+    subject = `Payment Commitment — ${c.cardCode}`;
+    lines.push(`=== COMMIT TO PAY ===`);
+    lines.push(`Date: ${fmtDate($('commitDate').value)}`);
+    lines.push(`Mode: ${$('commitMode').value}`);
+    lines.push(`Coverage: ${$('commitCoverage').value}`);
+    if ($('commitNotes').value) lines.push(`Notes: ${$('commitNotes').value}`);
+  } else if (tab === 'proof') {
+    subject = `Proof of Payment — ${c.cardCode}`;
+    lines.push(`=== PROOF OF PAYMENT ===`);
+    lines.push(`Date Paid: ${fmtDate($('paidDate').value)}`);
+    lines.push(`Amount: ${fmtPHP($('paidAmount').value)}`);
+    lines.push(`Mode: ${$('paidMode').value}`);
+    lines.push(`Ref No: ${$('paidRef').value}`);
+    if ($('paidNotes').value) lines.push(`Notes: ${$('paidNotes').value}`);
+    lines.push(''); lines.push('*** Please attach receipt/screenshot ***');
+  } else {
+    subject = `Dispute — ${c.cardCode}`;
+    lines.push(`=== DISPUTE / INQUIRY ===`);
+    lines.push(`Reason: ${$('dispReason').value}`);
+    lines.push(`Details: ${$('dispDetails').value}`);
+  }
+  lines.push(''); lines.push('-- Sent from Vienovo AR Customer Portal --');
+  const href = `mailto:ar@vienovo.ph?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
+  window.location.href = href;
+  toast('Opening your email app...');
+});
+
+$('btnPrint').addEventListener('click', () => window.print());
+
+validateToken();
 </script>
 
 </body>
