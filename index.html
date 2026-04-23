@@ -1,86 +1,628 @@
-// ─── MSAL CONFIGURATION ───────────────────────────────────────────────────────
-// Ms. Cris-an: Replace CLIENT_ID and TENANT_ID with values from Azure App Registration
-const MSAL_CONFIG = {
-  auth: {
-    clientId:    'YOUR_CLIENT_ID_HERE',
-    authority:   'https://login.microsoftonline.com/YOUR_TENANT_ID_HERE',
-    redirectUri: window.location.origin + window.location.pathname
-  },
-  cache: {
-    cacheLocation:        'sessionStorage',
-    storeAuthStateInCookie: true  // required for mobile Edge/Safari
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vienovo AR — Collection Email Form</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy-1: #0e2a44;
+    --navy-2: #1a4670;
+    --navy-3: #245a8c;
+    --green: #8BC34A;
+    --green-dark: #6ea637;
+    --text: #2a2a2a;
+    --muted: #8a95a3;
+    --line: #e4e8ed;
+    --bg: #f4f6f8;
   }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .container { max-width: 920px; margin: 0 auto; padding: 28px 24px 60px; }
+
+  /* === TOP BAR === */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--green);
+    margin-bottom: 28px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo-circle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy-1), var(--navy-3));
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .logo-circle::after {
+    content: ''; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 0 2px #fff;
+  }
+  .brand-text .name { font-size: 22px; font-weight: 700; color: var(--navy-1); letter-spacing: -0.5px; }
+  .brand-text .name .ac { color: var(--green); }
+  .brand-text .sub { font-size: 11px; color: var(--muted); letter-spacing: 2px; font-weight: 600; }
+  .session { text-align: right; }
+  .session .label { font-size: 11px; color: var(--muted); letter-spacing: 2px; font-weight: 600; }
+  .session .user { font-size: 16px; color: var(--navy-1); font-weight: 700; margin-top: 2px; }
+
+  /* === HERO CARD === */
+  .hero {
+    background: linear-gradient(135deg, var(--navy-1) 0%, var(--navy-2) 60%, var(--navy-3) 100%);
+    border-radius: 10px 10px 0 0;
+    padding: 40px 44px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; right: -40px; top: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .hero::after {
+    content: ''; position: absolute; right: 60px; bottom: -60px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: rgba(139,195,74,0.08);
+  }
+  .step-label {
+    font-size: 12px; color: var(--green); letter-spacing: 3px;
+    font-weight: 700; margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-size: 44px; font-weight: 700; line-height: 1.1;
+    margin-bottom: 18px; letter-spacing: -1px;
+  }
+  .hero h1 .accent { color: var(--green); }
+  .hero p { font-size: 15px; max-width: 580px; opacity: 0.92; line-height: 1.6; }
+
+  /* Green divider under hero */
+  .hero-divider { height: 4px; background: var(--green); }
+
+  /* === MAIN PANEL === */
+  .panel {
+    background: #fff;
+    border-radius: 0 0 10px 10px;
+    padding: 36px 44px 44px;
+    box-shadow: 0 4px 14px rgba(14,42,68,0.08);
+  }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 36px; }
+  .progress-head {
+    display: flex; justify-content: space-between;
+    font-size: 11px; letter-spacing: 2px; font-weight: 700;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .progress-head .count { color: var(--navy-1); font-size: 13px; }
+  .progress-bar {
+    height: 4px; background: var(--line); border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--green-dark), var(--green));
+    width: 12.5%; transition: width 0.3s ease;
+  }
+
+  /* === FIELDS === */
+  .field {
+    border-top: 1px solid var(--line);
+    padding: 28px 0;
+  }
+  .field:first-of-type { border-top: none; padding-top: 0; }
+  .field-num {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 10px;
+  }
+  .field-num .num {
+    font-size: 11px; color: var(--green); letter-spacing: 3px;
+    font-weight: 700;
+  }
+  .field-num .line { flex: 0 0 40px; height: 1px; background: var(--green); }
+  .field-title {
+    font-size: 26px; font-weight: 700; color: var(--navy-1);
+    margin-bottom: 6px; letter-spacing: -0.5px;
+  }
+  .field-title .req { color: var(--green); }
+  .field-help {
+    font-size: 13px; color: var(--muted); margin-bottom: 18px;
+  }
+
+  /* Underline input */
+  .u-input {
+    width: 100%; padding: 12px 0; font-size: 16px;
+    border: none; border-bottom: 1px solid var(--line);
+    background: transparent; font-family: inherit; color: var(--text);
+    transition: border-color 0.2s;
+  }
+  .u-input:focus { outline: none; border-bottom-color: var(--green); }
+  .u-input::placeholder { color: #b5bcc5; }
+  select.u-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238BC34A' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    padding-right: 24px;
+    cursor: pointer;
+  }
+  textarea.u-input { resize: vertical; min-height: 60px; border: 1px solid var(--line); padding: 12px; border-radius: 6px; }
+  textarea.u-input:focus { border-color: var(--green); }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
+
+  /* === ACTIONS === */
+  .actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--line);
+    gap: 12px; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 14px 28px; font-size: 13px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    border: none; border-radius: 4px; cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--navy-1); color: #fff;
+  }
+  .btn-primary:hover { background: var(--navy-2); transform: translateY(-1px); }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover { color: var(--navy-1); border-color: var(--navy-1); }
+  .btn-green {
+    background: var(--green); color: #fff;
+  }
+  .btn-green:hover { background: var(--green-dark); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* === STEP PANELS === */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === PREVIEW === */
+  .email-preview {
+    background: var(--bg); padding: 24px; border-radius: 8px;
+    border: 1px solid var(--line); margin-top: 16px;
+  }
+  .email-card {
+    max-width: 580px; margin: 0 auto; background: #fff;
+    border-radius: 6px; overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .ec-head { background: var(--navy-1); color: #fff; padding: 18px 24px; }
+  .ec-head h3 { font-size: 17px; margin-bottom: 3px; }
+  .ec-head p { font-size: 12px; opacity: 0.85; }
+  .ec-body { padding: 22px 24px; font-size: 13px; line-height: 1.55; }
+  .ec-box {
+    background: #f9fafc; border: 1px solid var(--line);
+    border-radius: 5px; padding: 14px; margin: 14px 0; font-size: 12px;
+  }
+  .ec-box h4 { color: var(--navy-1); margin-bottom: 8px; font-size: 13px; }
+  .ec-box table { width: 100%; }
+  .ec-box td { padding: 3px 0; }
+  .ec-box td:first-child { color: var(--muted); width: 45%; }
+  .ec-confirm {
+    background: #fff8e1; border-left: 3px solid var(--green);
+    padding: 12px 14px; border-radius: 4px; margin: 14px 0; font-size: 12px;
+  }
+  .ec-confirm button {
+    background: var(--navy-1); color: #fff; padding: 9px 18px;
+    border: none; border-radius: 4px; font-size: 12px; font-weight: 600;
+    margin-top: 8px; cursor: pointer;
+  }
+  .ec-sign { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; font-size: 12px; }
+
+  /* === SUMMARY CARDS (Step 3) === */
+  .summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .sum-card {
+    background: #f9fafc; border-left: 3px solid var(--green);
+    padding: 14px 18px; border-radius: 4px;
+  }
+  .sum-card .k {
+    font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    font-weight: 700; margin-bottom: 4px;
+  }
+  .sum-card .v { font-size: 15px; color: var(--navy-1); font-weight: 600; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--navy-1); color: #fff;
+    padding: 14px 22px; border-radius: 6px; font-size: 13px;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+
+  /* Modal */
+  .modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(14,42,68,0.6); z-index: 500;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 10px; padding: 36px;
+    max-width: 480px; width: 100%;
+  }
+  .modal h2 { color: var(--navy-1); margin-bottom: 8px; font-size: 24px; }
+  .modal p { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo-circle"></div>
+      <div class="brand-text">
+        <div class="name">vie<span class="ac">novo</span></div>
+        <div class="sub">ACCOUNTS RECEIVABLE</div>
+      </div>
+    </div>
+    <div class="session">
+      <div class="label">PROCESS OWNER</div>
+      <div class="user" id="sessionUser">Cris-An Urtezuela</div>
+    </div>
+  </div>
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div class="step-label" id="stepLabel">COLLECTION WORKFLOW • STEP 1 OF 3</div>
+    <h1 id="stepTitle">Customer <span class="accent">Details.</span></h1>
+    <p id="stepDesc">Select the customer account and confirm delivery info. Master-data fields will auto-populate where available.</p>
+  </div>
+  <div class="hero-divider"></div>
+
+  <!-- ============ PANEL ============ -->
+  <div class="panel">
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-head">
+        <span>COMPLETION</span>
+        <span class="count" id="progCount">1 / 8 FIELDS</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+    </div>
+
+    <!-- =================================================
+         STEP 1 — CUSTOMER
+         ================================================= -->
+    <div class="step-panel active" data-step="1">
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 01</span><span class="line"></span></div>
+        <div class="field-title">Customer <span class="req">*</span></div>
+        <div class="field-help">Select the customer account. Master-data details will populate automatically below.</div>
+        <input type="text" class="u-input" id="f_customer" placeholder="e.g. ABC Trading Corp." list="customerList" oninput="update()">
+        <datalist id="customerList">
+          <option value="ABC Trading Corp.">
+          <option value="Pacific Merchandise Inc.">
+          <option value="Luzon Distributors Co.">
+          <option value="Metro Logistics Ltd.">
+          <option value="Visayan Supply Chain">
+        </datalist>
+      </div>
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 02</span><span class="line"></span></div>
+        <div class="field-title">Customer Email <span class="req">*</span></div>
+        <div class="field-help">Primary recipient of the collection email. Use the AR contact on file.</div>
+        <input type="email" class="u-input" id="f_email" placeholder="e.g. accounts@customer.ph" oninput="update()">
+      </div>
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 03</span><span class="line"></span></div>
+        <div class="field-title">Customer PO Reference</div>
+        <div class="field-help">Purchase order associated with the invoice being followed up.</div>
+        <input type="text" class="u-input" id="f_po" placeholder="e.g. PO-88421" oninput="update()">
+      </div>
+
+    </div>
+
+    <!-- =================================================
+         STEP 2 — INVOICE
+         ================================================= -->
+    <div class="step-panel" data-step="2">
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 04</span><span class="line"></span></div>
+        <div class="field-title">Invoice Number <span class="req">*</span></div>
+        <div class="field-help">SAP B1 A/R invoice reference.</div>
+        <input type="text" class="u-input" id="f_invno" placeholder="e.g. INV-2026-04521" oninput="update()">
+      </div>
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 05</span><span class="line"></span></div>
+        <div class="field-title">Invoice & Due Dates <span class="req">*</span></div>
+        <div class="field-help">Used to calculate days overdue in the reminder message.</div>
+        <div class="row2">
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">INVOICE DATE</div>
+            <input type="date" class="u-input" id="f_invdate" oninput="update()">
+          </div>
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">DUE DATE</div>
+            <input type="date" class="u-input" id="f_duedate" oninput="update()">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 06</span><span class="line"></span></div>
+        <div class="field-title">Amount Due (PHP) <span class="req">*</span></div>
+        <div class="field-help">Outstanding balance. Format with thousands separators automatically.</div>
+        <input type="number" class="u-input" id="f_amount" placeholder="e.g. 125450" oninput="update()">
+      </div>
+
+    </div>
+
+    <!-- =================================================
+         STEP 3 — TONE & SEND
+         ================================================= -->
+    <div class="step-panel" data-step="3">
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 07</span><span class="line"></span></div>
+        <div class="field-title">Reminder Tone <span class="req">*</span></div>
+        <div class="field-help">Escalation level. Adjusts greeting language in the generated email.</div>
+        <select class="u-input" id="f_tone" onchange="update()">
+          <option value="gentle">Gentle — 1st reminder</option>
+          <option value="firm">Firm — 2nd reminder</option>
+          <option value="final">Final notice</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field-num"><span class="num">FIELD 08</span><span class="line"></span></div>
+        <div class="field-title">Additional Notes</div>
+        <div class="field-help">Optional message appended before the signature. Leave blank to use default copy.</div>
+        <textarea class="u-input" id="f_notes" placeholder="e.g. Please confirm receipt of this reminder..." oninput="update()"></textarea>
+      </div>
+
+      <!-- Summary -->
+      <div class="field">
+        <div class="field-num"><span class="num">REVIEW</span><span class="line"></span></div>
+        <div class="field-title">Review & Send</div>
+        <div class="field-help">Confirm the details below. The email preview shows exactly what the customer will receive.</div>
+
+        <div class="summary-grid">
+          <div class="sum-card"><div class="k">TO</div><div class="v" id="s_to">—</div></div>
+          <div class="sum-card"><div class="k">INVOICE</div><div class="v" id="s_inv">—</div></div>
+          <div class="sum-card"><div class="k">AMOUNT</div><div class="v" id="s_amt">PHP —</div></div>
+          <div class="sum-card"><div class="k">DAYS OVERDUE</div><div class="v" id="s_over">—</div></div>
+        </div>
+
+        <div class="email-preview">
+          <div class="email-card" id="emailPreview"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ ACTIONS ============ -->
+    <div class="actions">
+      <button class="btn btn-ghost" id="btnBack" onclick="goBack()">← Back</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" onclick="saveDraft()">Save Draft</button>
+        <button class="btn btn-primary" id="btnNext" onclick="goNext()">Continue →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>Confirm Payment Date</h2>
+    <p>Paki-pili po ng petsa kung kailan inyong babayaran ang invoice.</p>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">COMMITTED PAYMENT DATE</div>
+      <input type="date" class="u-input" id="commit_date">
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px; color:var(--muted); margin-bottom:2px;">REMARKS (OPTIONAL)</div>
+      <textarea class="u-input" id="commit_remarks" placeholder="e.g. Ipo-process sa susunod na check run..."></textarea>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="submitCommit()">Submit Commitment</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ======================================================
+// State
+// ======================================================
+var currentStep = 1;
+var totalSteps  = 3;
+var stepMeta = {
+  1: { label: 'COLLECTION WORKFLOW • STEP 1 OF 3', title: 'Customer <span class="accent">Details.</span>',
+       desc:  'Select the customer account and confirm delivery info. Master-data fields will auto-populate where available.' },
+  2: { label: 'COLLECTION WORKFLOW • STEP 2 OF 3', title: 'Invoice <span class="accent">Entry.</span>',
+       desc:  'Capture the invoice reference, dates, and outstanding amount. These details drive the reminder calculations.' },
+  3: { label: 'COLLECTION WORKFLOW • STEP 3 OF 3', title: 'Review & <span class="accent">Send.</span>',
+       desc:  'Set the tone, add any custom notes, then review the generated email before dispatching to the customer.' }
 };
 
-const SCOPES = ['Files.ReadWrite', 'Files.ReadWrite.All', 'User.Read'];
+function $(id) { return document.getElementById(id); }
 
-let _msal = null;
-
-async function initMSAL() {
-  _msal = new msal.PublicClientApplication(MSAL_CONFIG);
-  await _msal.initialize();
-
-  // Handle redirect response on mobile after page reload
-  const redirectResult = await _msal.handleRedirectPromise();
-  if (redirectResult) {
-    _msal.setActiveAccount(redirectResult.account);
-    return redirectResult.account;
-  }
-
-  const accounts = _msal.getAllAccounts();
-  if (accounts.length > 0) {
-    _msal.setActiveAccount(accounts[0]);
-    return accounts[0];
-  }
-
-  return null;
+// ======================================================
+// Navigation
+// ======================================================
+function showStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-step="' + n + '"]').classList.add('active');
+  currentStep = n;
+  $('stepLabel').textContent = stepMeta[n].label;
+  $('stepTitle').innerHTML = stepMeta[n].title;
+  $('stepDesc').textContent = stepMeta[n].desc;
+  $('btnBack').style.visibility = (n === 1) ? 'hidden' : 'visible';
+  $('btnNext').textContent = (n === totalSteps) ? 'Send Email →' : 'Continue →';
+  if (n === totalSteps) $('btnNext').classList.replace('btn-primary', 'btn-green');
+  else $('btnNext').classList.replace('btn-green', 'btn-primary');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  update();
 }
 
-async function msalLogin() {
-  const isMobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
-  try {
-    if (isMobile) {
-      // Redirect flow — page will reload after auth
-      await _msal.loginRedirect({ scopes: SCOPES });
-      return null;
-    }
-    const resp = await _msal.loginPopup({ scopes: SCOPES });
-    _msal.setActiveAccount(resp.account);
-    return resp.account;
-  } catch (e) {
-    // Popup blocked — fall back to redirect
-    if (e.errorCode === 'popup_window_error') {
-      await _msal.loginRedirect({ scopes: SCOPES });
-      return null;
-    }
-    throw e;
+function goNext() {
+  if (currentStep < totalSteps) {
+    showStep(currentStep + 1);
+  } else {
+    sendEmail();
   }
 }
 
-async function msalLogout() {
-  const account = _msal?.getActiveAccount();
-  if (!account) return;
-  await _msal.logoutPopup({ account }).catch(() => _msal.logoutRedirect({ account }));
+function goBack() {
+  if (currentStep > 1) showStep(currentStep - 1);
 }
 
-async function getAccessToken() {
-  const account = _msal?.getActiveAccount();
-  if (!account) throw new Error('User not logged in.');
+// ======================================================
+// Completion tracking
+// ======================================================
+function calcProgress() {
+  var fields = ['f_customer','f_email','f_po','f_invno','f_invdate','f_duedate','f_amount','f_tone'];
+  var filled = fields.filter(id => $(id) && $(id).value).length;
+  var pct = (filled / fields.length) * 100;
+  $('progFill').style.width = pct + '%';
+  $('progCount').textContent = filled + ' / ' + fields.length + ' FIELDS';
+  return filled;
+}
 
-  try {
-    const resp = await _msal.acquireTokenSilent({ scopes: SCOPES, account });
-    return resp.accessToken;
-  } catch {
-    const isMobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
-    if (isMobile) {
-      await _msal.acquireTokenRedirect({ scopes: SCOPES, account });
-      return null;
-    }
-    const resp = await _msal.acquireTokenPopup({ scopes: SCOPES, account });
-    return resp.accessToken;
+// ======================================================
+// Utilities
+// ======================================================
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+}
+function fmtMoney(n) {
+  if (!n) return '—';
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function daysOverdue(due) {
+  if (!due) return 0;
+  return Math.max(0, Math.floor((new Date() - new Date(due)) / 86400000));
+}
+function toneGreeting(t) {
+  if (t === 'firm')  return 'Ito ay <b>follow-up</b> ukol sa inyong overdue invoice. Hinihiling po namin ang inyong agarang atensyon.';
+  if (t === 'final') return 'Ito ay <b>FINAL NOTICE</b> ukol sa inyong matagal nang overdue invoice. Kailangan po naming ma-resolve ito upang maiwasan ang eskalasyon.';
+  return 'Magandang araw po. Ito ay isang magalang na paalala ukol sa inyong outstanding invoice sa amin.';
+}
+
+// ======================================================
+// Render preview + summary
+// ======================================================
+function update() {
+  calcProgress();
+
+  var customer = $('f_customer').value || '[Customer]';
+  var email    = $('f_email').value    || '[email]';
+  var po       = $('f_po').value       || '—';
+  var invno    = $('f_invno').value    || '[INV-####]';
+  var invdate  = fmtDate($('f_invdate').value);
+  var duedate  = fmtDate($('f_duedate').value);
+  var amount   = fmtMoney($('f_amount').value);
+  var tone     = $('f_tone').value;
+  var notes    = $('f_notes').value;
+  var overdue  = daysOverdue($('f_duedate').value);
+  var sender   = $('sessionUser').textContent;
+
+  // Summary cards
+  $('s_to').textContent   = email;
+  $('s_inv').textContent  = invno;
+  $('s_amt').textContent  = 'PHP ' + amount;
+  $('s_over').textContent = overdue + (overdue === 1 ? ' day' : ' days');
+
+  // Email preview
+  $('emailPreview').innerHTML = `
+    <div class="ec-head">
+      <h3>Vienovo — Accounts Receivable</h3>
+      <p>Invoice Reminder / Payment Follow-up</p>
+    </div>
+    <div class="ec-body">
+      <p>Dear <strong>${customer}</strong>,</p>
+      <p>${toneGreeting(tone)}</p>
+      <div class="ec-box">
+        <h4>Invoice Details</h4>
+        <table>
+          <tr><td>Invoice Number:</td><td><strong>${invno}</strong></td></tr>
+          <tr><td>Invoice Date:</td><td>${invdate}</td></tr>
+          <tr><td>Due Date:</td><td><strong style="color:#A32D2D;">${duedate}</strong></td></tr>
+          <tr><td>Amount Due:</td><td><strong>PHP ${amount}</strong></td></tr>
+          <tr><td>Days Overdue:</td><td>${overdue} days</td></tr>
+          <tr><td>PO Reference:</td><td>${po}</td></tr>
+        </table>
+      </div>
+      <div class="ec-confirm">
+        <strong>Kindly confirm your payment schedule.</strong>
+        <br><button onclick="openModal()">Confirm Payment Date</button>
+      </div>
+      ${notes ? `<p style="font-style:italic; color:#555;">${notes}</p>` : ''}
+      <div class="ec-sign">
+        <p>Salamat po sa inyong patuloy na pagtitiwala.</p>
+        <p style="margin-top:10px;"><strong>${sender}</strong><br>Accounts Receivable · Vienovo Inc.</p>
+      </div>
+    </div>
+  `;
+}
+
+// ======================================================
+// Actions
+// ======================================================
+function saveDraft() { toast('Draft saved locally.'); }
+
+function sendEmail() {
+  if (!$('f_customer').value || !$('f_email').value || !$('f_invno').value) {
+    toast('Please complete required fields before sending.');
+    return;
   }
+  var to = $('f_email').value;
+  var subject = 'Payment Reminder — Invoice ' + $('f_invno').value;
+  var body = 'Dear ' + $('f_customer').value + ',\n\nMagandang araw po. Paalala po ukol sa Invoice ' + $('f_invno').value + ' (Due: ' + $('f_duedate').value + ', Amount: PHP ' + $('f_amount').value + ').\n\nPaki-confirm po ang payment schedule. Salamat po!\n\n' + $('sessionUser').textContent + '\nVienovo AR';
+  window.location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  toast('Opening email client...');
 }
 
-function getCurrentUser() {
-  return _msal?.getActiveAccount() ?? null;
+function openModal() { $('modal').classList.add('show'); }
+function closeModal() { $('modal').classList.remove('show'); }
+function submitCommit() {
+  if (!$('commit_date').value) { toast('Paki-pili po ng date.'); return; }
+  toast('Commitment submitted: ' + fmtDate($('commit_date').value));
+  closeModal();
 }
+
+function toast(msg) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init
+showStep(1);
+</script>
+
+</body>
+</html>
