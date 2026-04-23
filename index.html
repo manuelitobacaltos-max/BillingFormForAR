@@ -330,9 +330,9 @@
 
       <div class="field">
         <div class="field-num"><span class="num">FIELD 03</span><span class="line"></span></div>
-        <div class="field-title">Customer PO Reference</div>
-        <div class="field-help">Purchase order associated with the invoice being followed up.</div>
-        <input type="text" class="u-input" id="f_po" placeholder="e.g. PO-88421" oninput="update()">
+        <div class="field-title">Delivery Receipt Number</div>
+        <div class="field-help">DR number associated with the invoice being followed up.</div>
+        <input type="text" class="u-input" id="f_dr" placeholder="e.g. DR-88421" oninput="update()">
       </div>
 
     </div>
@@ -502,7 +502,7 @@ function goBack() {
 // Completion tracking
 // ======================================================
 function calcProgress() {
-  var fields = ['f_customer','f_email','f_po','f_invno','f_invdate','f_duedate','f_amount','f_tone'];
+  var fields = ['f_customer','f_email','f_dr','f_invno','f_invdate','f_duedate','f_amount','f_tone'];
   var filled = fields.filter(id => $(id) && $(id).value).length;
   var pct = (filled / fields.length) * 100;
   $('progFill').style.width = pct + '%';
@@ -539,7 +539,7 @@ function update() {
 
   var customer = $('f_customer').value || '[Customer]';
   var email    = $('f_email').value    || '[email]';
-  var po       = $('f_po').value       || '—';
+  var drNum    = $('f_dr').value       || '—';
   var invno    = $('f_invno').value    || '[INV-####]';
   var invdate  = fmtDate($('f_invdate').value);
   var duedate  = fmtDate($('f_duedate').value);
@@ -572,7 +572,7 @@ function update() {
           <tr><td>Due Date:</td><td><strong style="color:#A32D2D;">${duedate}</strong></td></tr>
           <tr><td>Amount Due:</td><td><strong>PHP ${amount}</strong></td></tr>
           <tr><td>Days Overdue:</td><td>${overdue} days</td></tr>
-          <tr><td>PO Reference:</td><td>${po}</td></tr>
+          <tr><td>DR Reference:</td><td>${drNum}</td></tr>
         </table>
       </div>
       <div class="ec-confirm">
