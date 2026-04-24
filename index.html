@@ -1,692 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vienovo Inc. · Accounts Receivable — Customer Billing Statement</title>
-<style>
-  :root {
-    --brand: #185FA5;
-    --brand-dark: #0F4278;
-    --warn: #BA7517;
-    --alert: #A32D2D;
-    --ok: #2E7D4F;
-    --bg: #eef2f6;
-    --card: #ffffff;
-    --ink: #1f2937;
-    --muted: #6b7280;
-    --line: #dfe4ea;
-    --soft: #f7f9fc;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
-    background: var(--bg);
-    color: var(--ink);
-    line-height: 1.55;
-    padding: 20px 12px 40px;
-  }
-  .wrap { max-width: 760px; margin: 0 auto; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vienovo | Secure Customer Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.25/jsrsasign-all-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.2/otpauth.dist.min.js"></script>
 
-  .hero {
-    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
-    color: #fff;
-    padding: 22px 26px;
-    border-radius: 10px 10px 0 0;
-  }
-  .hero .crumb {
-    display: inline-block;
-    background: rgba(255,255,255,0.18);
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-  }
-  .hero h1 { margin: 0; font-size: 21px; font-weight: 600; }
-  .hero p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
-
-  .card {
-    background: var(--card);
-    border-radius: 0 0 10px 10px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    overflow: hidden;
-  }
-  .section { padding: 22px 26px; border-bottom: 1px solid var(--line); }
-  .section:last-child { border-bottom: 0; }
-  .section h2 {
-    margin: 0 0 12px;
-    font-size: 15px;
-    color: var(--brand);
-    font-weight: 600;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section h2::before {
-    content: ""; width: 4px; height: 16px; background: var(--brand); border-radius: 2px;
-  }
-
-  label.fld {
-    display: block; font-size: 12px; color: var(--muted);
-    margin-bottom: 4px; font-weight: 500;
-  }
-  input, select, textarea {
-    width: 100%; padding: 11px 13px;
-    border: 1px solid var(--line); border-radius: 6px;
-    font-size: 14px; font-family: inherit;
-    background: #fff; color: var(--ink);
-  }
-  input:focus, select:focus, textarea:focus {
-    outline: none; border-color: var(--brand);
-    box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
-  }
-  textarea { resize: vertical; min-height: 70px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
-  .full { grid-column: 1 / -1; }
-
-  .btn {
-    width: 100%; padding: 13px;
-    background: var(--brand); color: #fff; border: 0;
-    border-radius: 6px; font-size: 14px; font-weight: 600;
-    cursor: pointer; font-family: inherit;
-  }
-  .btn:hover { background: var(--brand-dark); }
-  .btn.ghost { background: #fff; color: var(--brand); border: 1px solid var(--brand); }
-  .btn.ghost:hover { background: rgba(24,95,165,0.08); }
-  .btn.small { width: auto; padding: 8px 14px; font-size: 13px; }
-
-  .notice {
-    background: #eef4fb; border: 1px solid #cfe0f2;
-    padding: 10px 14px; border-radius: 6px;
-    font-size: 12.5px; color: var(--brand-dark);
-  }
-  .notice.warn { background: #fffdf4; border-color: #f2dcae; color: var(--warn); }
-  .notice.err { background: #fdeeee; border-color: #f0c4c4; color: var(--alert); }
-
-  .lock-icon {
-    font-size: 28px; color: var(--brand);
-    text-align: center; display: block; margin: 4px 0 12px;
-  }
-
-  .steps {
-    display: flex; gap: 8px; margin-bottom: 18px;
-    font-size: 12px;
-  }
-  .steps .step {
-    flex: 1; padding: 8px 10px;
-    border-radius: 6px; background: var(--soft);
-    border: 1px solid var(--line); text-align: center;
-    color: var(--muted); font-weight: 500;
-  }
-  .steps .step.active { background: var(--brand); color: #fff; border-color: var(--brand); }
-  .steps .step.done { background: #d6ead9; color: var(--ok); border-color: #b5d5ba; }
-
-  .cust-summary {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 16px;
-    background: var(--soft);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 16px 18px;
-    margin-bottom: 18px;
-  }
-  @media (max-width: 600px) { .cust-summary { grid-template-columns: 1fr; } }
-  .cust-summary .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
-  .cust-summary .val { font-size: 14px; font-weight: 600; color: var(--ink); }
-  .cust-summary .val.big { font-size: 20px; color: var(--alert); }
-
-  .inv-list { list-style: none; padding: 0; margin: 0; }
-  .inv-item {
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    overflow: hidden;
-    background: #fff;
-  }
-  .inv-head {
-    padding: 14px 16px;
-    cursor: pointer;
-    display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr auto;
-    gap: 10px;
-    align-items: center;
-    transition: background 0.15s;
-  }
-  .inv-head:hover { background: var(--soft); }
-  .inv-head .no { font-weight: 600; font-size: 14px; color: var(--brand); }
-  .inv-head .date { font-size: 12px; color: var(--muted); }
-  .inv-head .amt { font-weight: 700; font-size: 15px; text-align: right; }
-  .inv-head .badge {
-    font-size: 11px; padding: 2px 8px; border-radius: 10px;
-    color: #fff; font-weight: 600; white-space: nowrap; text-align: center;
-  }
-  .badge.overdue { background: var(--alert); }
-  .badge.due-soon { background: var(--warn); }
-  .badge.ok { background: var(--ok); }
-  .badge.paid { background: #888; }
-  @media (max-width: 520px) {
-    .inv-head { grid-template-columns: 1fr 1fr; }
-    .inv-head .date { grid-column: 1 / 2; }
-    .inv-head .amt { grid-column: 2 / 3; }
-    .inv-head .badge { grid-column: 1 / -1; text-align: left; justify-self: start; }
-  }
-  .inv-body {
-    display: none;
-    padding: 14px 16px;
-    border-top: 1px dashed var(--line);
-    background: var(--soft);
-    font-size: 13px;
-  }
-  .inv-item.open .inv-body { display: block; }
-  .inv-body table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-  .inv-body td { padding: 4px 0; font-size: 12.5px; }
-  .inv-body td.lbl { color: var(--muted); width: 38%; }
-  .inv-body td.val { font-weight: 500; }
-  .refchip {
-    display: inline-block;
-    background: #e8eef6;
-    color: var(--brand-dark);
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-right: 4px;
-    font-family: monospace;
-  }
-
-  .tabs {
-    display: flex; gap: 6px; margin: 14px 0;
-    background: var(--soft); padding: 4px; border-radius: 8px;
-  }
-  .tabs button {
-    flex: 1; padding: 9px; border: 0; background: transparent;
-    cursor: pointer; font-size: 13px; color: var(--muted);
-    border-radius: 6px; font-weight: 500; font-family: inherit;
-  }
-  .tabs button.active {
-    background: #fff; color: var(--brand); font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .pane { display: none; }
-  .pane.active { display: block; }
-
-  .hidden { display: none !important; }
-
-  .foot {
-    text-align: center; margin-top: 14px;
-    font-size: 11px; color: var(--muted);
-  }
-  .foot a { color: var(--brand); text-decoration: none; }
-
-  .contact-info {
-    padding: 14px 26px;
-    background: var(--soft);
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-    border-top: 1px solid var(--line);
-  }
-  .contact-info a { color: var(--brand); text-decoration: none; font-weight: 500; }
-
-  .toast {
-    position: fixed; bottom: 20px; right: 20px;
-    background: var(--ok); color: #fff;
-    padding: 10px 16px; border-radius: 6px;
-    font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    opacity: 0; transform: translateY(10px);
-    transition: all 0.25s; z-index: 99;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.err { background: var(--alert); }
-</style>
+    <style>
+        :root {
+            --novo-blue: #185FA5;
+            --novo-green: #8CC63F;
+            --novo-red: #A32D2D;
+        }
+        .bg-novo-blue { background-color: var(--novo-blue); }
+        .text-novo-blue { color: var(--novo-blue); }
+        .bg-novo-green { background-color: var(--novo-green); }
+        .border-novo-green { border-color: var(--novo-green); }
+        .text-novo-red { color: var(--novo-red); }
+        
+        .step-pill.active { background-color: var(--novo-blue); color: white; transform: scale(1.02); shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .step-pill.completed { background-color: var(--novo-green); color: white; }
+        
+        .btn-primary { background-color: var(--novo-blue); transition: all 0.2s; }
+        .btn-primary:hover:not(:disabled) { background-color: #124a82; transform: translateY(-1px); }
+        .btn-primary:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50 font-sans text-slate-900 antialiased min-h-screen">
 
-<div class="wrap">
-
-  <div class="hero">
-    <div class="crumb">Vienovo Inc. · Accounts Receivable</div>
-    <h1>Customer Billing Statement</h1>
-    <p>Secure per-customer access · OINV / ODLN / ORDR read-only lookup</p>
-  </div>
-
-  <div class="card">
-
-    <div class="section" id="stepSection">
-      <div class="steps" id="stepIndicator">
-        <div class="step active" data-step="1">1. Validate Link</div>
-        <div class="step" data-step="2">2. Verify Name</div>
-        <div class="step" data-step="3">3. OTP Confirm</div>
-        <div class="step" data-step="4">4. View Statement</div>
-      </div>
-    </div>
-
-    <div class="section" id="step1">
-      <h2>Step 1 — Link Validation</h2>
-      <p id="step1Msg" style="font-size:13.5px; margin:0 0 12px;">Sinusuri po ang inyong secure link...</p>
-      <div id="step1Bad" class="notice err hidden">
-        <b>Invalid or expired link.</b><br>
-        Ang link na ito ay hindi valid. Pakitawag po ang Vienovo AR desk para humingi ng bagong secure link.
-      </div>
-      <div id="step1Good" class="notice hidden">
-        <b>Link verified.</b> This statement is issued for: <span id="step1Cust"></span>
-      </div>
-      <button class="btn small" id="proceedTo2" style="margin-top:10px;" disabled>Proceed to Name Verification</button>
-    </div>
-
-    <div class="section hidden" id="step2">
-      <h2>Step 2 — Name Verification</h2>
-      <span class="lock-icon">&#128274;</span>
-      <p style="font-size:13.5px; margin:0 0 14px;">
-        Para sa inyong seguridad, pakisulat po ang <b>registered business name</b> o <b>authorized contact name</b>
-        na naka-file sa Vienovo. Dapat tumugma ito sa account para ma-grant ang access.
-      </p>
-      <label class="fld">Registered Business Name / Authorized Contact</label>
-      <input id="nameInput" placeholder="e.g., ARACO Poultry Corp / Juan Dela Cruz" />
-      <div id="nameErr" class="notice err hidden" style="margin-top:10px;">
-        Hindi tumugma sa record. Paki-verify po ang spelling, o tumawag sa Vienovo AR desk.
-        <br><small>Attempts remaining: <span id="attemptsLeft">3</span></small>
-      </div>
-      <button class="btn" id="verifyName" style="margin-top:14px;">Verify Name</button>
-    </div>
-
-    <div class="section hidden" id="step3">
-      <h2>Step 3 — OTP Confirmation</h2>
-      <p style="font-size:13.5px; margin:0 0 12px;">
-        Nagpadala kami ng 6-digit code sa inyong registered email / mobile:
-        <b id="otpDest">&lt;registered contact&gt;</b>
-      </p>
-      <div class="notice warn" style="margin-bottom:12px;">
-        <b>Demo mode:</b> ang OTP para sa prototype na ito ay <code style="background:#fff;padding:2px 6px;border-radius:3px;">123456</code>.
-        Sa production, galing ito sa SMS/email gateway.
-      </div>
-      <label class="fld">Enter 6-digit OTP</label>
-      <input id="otpInput" maxlength="6" placeholder="123456" inputmode="numeric" pattern="[0-9]*" />
-      <div id="otpErr" class="notice err hidden" style="margin-top:10px;">Maling OTP. Subukan po ulit.</div>
-      <button class="btn" id="verifyOtp" style="margin-top:14px;">Confirm & View Statement</button>
-      <button class="btn ghost small" id="resendOtp" style="margin-top:8px;">Resend OTP</button>
-    </div>
-
-    <div class="section hidden" id="step4">
-      <h2>Your Outstanding Statement</h2>
-
-      <div class="cust-summary">
-        <div>
-          <div class="lbl">Account</div>
-          <div class="val" id="sCustName">—</div>
-          <div style="font-size:11px; color: var(--muted); font-family: monospace;" id="sCustCode">—</div>
+    <header class="bg-white border-b-4 border-novo-green shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <img src="https://www.vienovo.ph/wp-content/uploads/2021/04/vienovo-logo.png" alt="Vienovo" class="h-10">
+            <div class="text-right">
+                <h1 class="text-[10px] font-black tracking-widest text-slate-400 uppercase">Accounts Receivable</h1>
+                <p class="text-[10px] font-bold text-novo-blue italic uppercase leading-none">Improving the way we feed mankind</p>
+            </div>
         </div>
-        <div>
-          <div class="lbl">Open Invoices</div>
-          <div class="val" id="sInvCount">—</div>
+    </header>
+
+    <main class="container mx-auto max-w-2xl px-4 py-10">
+        
+        <nav class="flex justify-between mb-8 gap-2">
+            <div id="p1" class="step-pill active w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm">1. VALIDATE</div>
+            <div id="p2" class="step-pill bg-white w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm text-slate-300">2. VERIFY</div>
+            <div id="p3" class="step-pill bg-white w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm text-slate-300">3. SECURITY</div>
+            <div id="p4" class="step-pill bg-white w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm text-slate-300">4. STATEMENT</div>
+        </nav>
+
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+            
+            <section id="step1" class="p-10 text-center">
+                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-novo-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Secure Link Validation</h2>
+                <p class="text-slate-500 mb-8 text-sm">Verifying your 3-hour access credentials...</p>
+                
+                <div id="step1-msg" class="p-4 rounded-xl mb-8 text-sm font-medium bg-slate-50 border border-slate-100 italic text-slate-400">
+                    Checking cryptographic signature...
+                </div>
+                
+                <button id="btn-to-step2" disabled onclick="go(2)" class="btn-primary w-full text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg">
+                    Proceed to Name Verification
+                </button>
+            </section>
+
+            <section id="step2" class="p-10 hidden">
+                <h3 class="text-xl font-bold mb-2">Identity Verification</h3>
+                <p class="text-sm text-slate-500 mb-8 italic">"Pakisulat po ang registered business name na naka-file sa Vienovo para sa inyong seguridad."</p>
+                
+                <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Business Name / Authorized Contact</label>
+                <input type="text" id="name-input" placeholder="e.g. ARACO POULTRY" class="w-full p-4 border-2 border-slate-100 rounded-xl mb-8 focus:border-novo-blue outline-none text-lg font-semibold uppercase transition-all">
+                
+                <button onclick="checkName()" class="btn-primary w-full text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg">
+                    Confirm Identity
+                </button>
+            </section>
+
+            <section id="step3" class="p-10 hidden text-center">
+                <div class="flex justify-center mb-4">
+                    <span class="bg-blue-100 text-novo-blue text-[10px] font-black px-3 py-1 rounded-full uppercase">Two-Factor Authentication</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Security Code</h3>
+                <p class="text-sm text-slate-600 mb-8">Enter the 6-digit code from your <strong>Authenticator App</strong>.</p>
+                
+                <input type="text" id="otp" maxlength="6" placeholder="000000" class="w-full text-center text-5xl font-mono tracking-[0.2em] p-6 border-b-4 border-novo-blue outline-none bg-slate-50 mb-10 rounded-t-xl">
+
+                <button onclick="checkOTP()" class="bg-novo-green w-full text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg hover:brightness-105 mb-6 transition-all">
+                    Unlock Statement
+                </button>
+
+                <button onclick="toggleQR()" class="text-novo-blue text-[10px] font-bold uppercase tracking-tighter hover:underline">Setup Authenticator QR</button>
+                
+                <div id="qr-box" class="mt-8 hidden p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                    <div id="qrcode-img" class="flex justify-center mb-4 p-2 bg-white rounded-lg shadow-sm inline-block"></div>
+                    <p class="text-[9px] text-slate-400 font-black uppercase leading-tight">Scan this in Google or Microsoft Authenticator<br>to enroll your device.</p>
+                </div>
+            </section>
+
+            <section id="step4" class="hidden">
+                <div id="dashboard-ui"></div>
+            </section>
+
         </div>
-        <div>
-          <div class="lbl">Total Outstanding</div>
-          <div class="val big" id="sTotal">PHP —</div>
-        </div>
-      </div>
 
-      <div class="notice">
-        <b>Paalala:</b> I-tap/click po ang bawat invoice sa ibaba para makita ang full breakdown
-        (Sales Order, Delivery Receipt, driver, at amount details).
-      </div>
+        <footer class="mt-12 text-center">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                Official AR Contact: Ms. Cris-an D. · ar@vienovo.ph · (02) 1234-5678
+            </p>
+            <p class="mt-2 text-[9px] text-slate-300 italic">
+                Secure stateless link. Data is read-only and expires every 3 hours for your protection.
+            </p>
+        </footer>
+    </main>
 
-      <h3 style="font-size:14px; margin:18px 0 10px; color: var(--ink);">Invoices</h3>
-      <ul class="inv-list" id="invList"></ul>
+    <script>
+        // CRITICAL: Set this to match your Python generator's SECRET_KEY
+        const SHARED_KEY = "YOUR_MASTER_SECRET_KEY"; 
+        let DATA = null;
 
-      <h3 style="font-size:14px; margin:22px 0 6px; color: var(--ink);">Your Response</h3>
-      <p style="font-size:12.5px; color: var(--muted); margin:0 0 10px;">
-        Piliin po kung alin ang inyong gagawin para sa naka-pili na invoice(s).
-      </p>
+        // ON LOAD: Verify JWT and 3-Hour Expiry
+        window.onload = () => {
+            const token = new URLSearchParams(window.location.search).get('data');
+            if (!token) return showError("Access Denied: Missing Link Data");
 
-      <div class="tabs" id="tabs">
-        <button data-pane="commit" class="active">Commit to Pay</button>
-        <button data-pane="proof">Submit Proof</button>
-        <button data-pane="dispute">Dispute / Inquiry</button>
-      </div>
+            try {
+                // 1. Check Signature
+                if (KJUR.jws.JWS.verify(token, {utf8: SHARED_KEY}, ["HS256"])) {
+                    DATA = KJUR.jws.JWS.readSafeJSONString(atob(token.split(".")[1]));
+                    
+                    // 2. CHECK EXPIRATION (PhD-Level Requirement: 3-Hour TTL)
+                    const now = Math.floor(Date.now() / 1000);
+                    if (now > DATA.exp) {
+                        return showError("Security Alert: This link has expired (3-hour limit). Please request a new one.");
+                    }
 
-      <div class="pane active" id="pane-commit">
-        <div class="row">
-          <div>
-            <label class="fld">Commitment Date</label>
-            <input id="commitDate" type="date" />
-          </div>
-          <div>
-            <label class="fld">Payment Mode</label>
-            <select id="commitMode">
-              <option value="">— Select —</option>
-              <option>Bank Transfer (BDO)</option>
-              <option>Check</option>
-              <option>GCash</option>
-              <option>Cash Pick-up</option>
-            </select>
-          </div>
-          <div class="full">
-            <label class="fld">Coverage</label>
-            <select id="commitCoverage">
-              <option>Full amount of selected invoice(s)</option>
-              <option>Partial payment</option>
-            </select>
-          </div>
-          <div class="full">
-            <label class="fld">Notes (optional)</label>
-            <textarea id="commitNotes" placeholder="Magbabayad po kami on the committed date. Salamat."></textarea>
-          </div>
-        </div>
-      </div>
+                    // 3. UI Update
+                    document.getElementById('step1-msg').innerHTML = `✅ Link Verified for:<br><span class="text-novo-blue font-bold uppercase">${DATA.cardName}</span>`;
+                    document.getElementById('step1-msg').className = "p-4 rounded-xl mb-8 text-sm font-medium bg-blue-50 text-novo-blue border border-blue-100 shadow-inner";
+                    
+                    const btn = document.getElementById('btn-to-step2');
+                    btn.disabled = false;
+                    document.getElementById('p1').classList.add('completed');
+                } else { 
+                    showError("Security Alert: Invalid or tampered signature."); 
+                }
+            } catch (e) { 
+                showError("Critical Error: Link corruption detected."); 
+            }
+        };
 
-      <div class="pane" id="pane-proof">
-        <div class="row">
-          <div><label class="fld">Date Paid</label><input id="paidDate" type="date" /></div>
-          <div><label class="fld">Amount Paid</label><input id="paidAmount" type="number" step="0.01" placeholder="0.00" /></div>
-          <div><label class="fld">Mode</label>
-            <select id="paidMode">
-              <option value="">— Select —</option>
-              <option>Bank Transfer</option>
-              <option>Check</option>
-              <option>GCash</option>
-              <option>Cash</option>
-            </select>
-          </div>
-          <div><label class="fld">Reference No.</label><input id="paidRef" placeholder="Txn / Check / GCash Ref" /></div>
-          <div class="full"><label class="fld">Notes</label><textarea id="paidNotes" placeholder="I-attach ang receipt/screenshot sa email pagkatapos."></textarea></div>
-        </div>
-      </div>
+        function go(s) {
+            document.querySelectorAll('section').forEach(x => x.classList.add('hidden'));
+            document.getElementById(`step${s}`).classList.remove('hidden');
+        }
 
-      <div class="pane" id="pane-dispute">
-        <div class="row">
-          <div class="full">
-            <label class="fld">Reason</label>
-            <select id="dispReason">
-              <option value="">— Select —</option>
-              <option>Amount mismatch</option>
-              <option>Invoice not received</option>
-              <option>Goods not yet delivered</option>
-              <option>Already paid</option>
-              <option>Request for extension</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="full">
-            <label class="fld">Details</label>
-            <textarea id="dispDetails" placeholder="Pakilagay po ang buong paliwanag..."></textarea>
-          </div>
-        </div>
-      </div>
+        function showError(m) {
+            const msg = document.getElementById('step1-msg');
+            msg.innerText = "❌ " + m;
+            msg.className = "p-4 rounded-xl mb-8 text-sm font-bold bg-red-50 text-novo-red border border-red-100";
+        }
 
-      <button class="btn" id="btnSubmit" style="margin-top:16px;">Submit Response to Vienovo AR</button>
-      <button class="btn ghost small" id="btnPrint" style="margin-top:8px;">Print / Save Statement</button>
-    </div>
+        function checkName() {
+            const val = document.getElementById('name-input').value.toUpperCase().trim();
+            // Fuzzy check: at least 4 chars match the CardName
+            if (DATA.cardName.includes(val) && val.length >= 4) {
+                document.getElementById('p2').classList.add('completed');
+                document.getElementById('p3').classList.add('active');
+                go(3);
+            } else {
+                alert("The name entered does not match the account holder. Please check your records.");
+            }
+        }
 
-    <div class="contact-info">
-      Questions? Contact <a href="mailto:ar@vienovo.ph">ar@vienovo.ph</a> ·
-      <a href="tel:+6321234567">(02) 1234-5678</a><br>
-      Biller: <span id="billerRef">Ms. Cris-an D. — AR Desk</span>
-    </div>
+        function checkOTP() {
+            const code = document.getElementById('otp').value.trim();
+            const totp = new OTPAuth.TOTP({ secret: DATA.totpSecret, digits: 6, period: 30 });
+            
+            if (totp.validate({ token: code, window: 1 }) !== null) {
+                document.getElementById('p3').classList.add('completed');
+                document.getElementById('p4').classList.add('active');
+                renderDashboard();
+                go(4);
+            } else {
+                alert("Incorrect Security Code. Please check your Authenticator app or your phone's clock.");
+            }
+        }
 
-  </div>
+        function toggleQR() {
+            const box = document.getElementById('qr-box');
+            box.classList.toggle('hidden');
+            if (!box.classList.contains('hidden')) {
+                const uri = `otpauth://totp/Vienovo%20AR:${DATA.cardCode}?secret=${DATA.totpSecret}&issuer=Vienovo%20Inc`;
+                document.getElementById('qrcode-img').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(uri)}" class="mx-auto" />`;
+            }
+        }
 
-  <div class="foot">
-    &copy; Vienovo Inc. · Secure link. Data is read-only from SAP (OINV, ODLN, ORDR).
-    Never shares across customers. No persistent cookies.
-  </div>
+        function renderDashboard() {
+            const total = DATA.invoices.reduce((s, i) => s + i.amount, 0);
+            document.getElementById('dashboard-ui').innerHTML = `
+                <div class="bg-novo-blue p-8 text-white">
+                    <p class="text-[10px] font-black tracking-widest opacity-60 uppercase mb-1">Current Outstanding Balance</p>
+                    <h2 class="text-4xl font-black mb-6 tracking-tighter">₱${total.toLocaleString(undefined, {minimumFractionDigits: 2})}</h2>
+                    <div class="pt-4 border-t border-white/20">
+                        <p class="text-xs font-black uppercase">${DATA.cardName}</p>
+                        <p class="text-[10px] opacity-60">${DATA.cardCode} | ${DATA.address}</p>
+                    </div>
+                </div>
+                
+                <div class="p-6 bg-slate-50 border-b border-slate-100">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Open Invoices</h4>
+                    <div class="space-y-3">
+                        ${DATA.invoices.map(inv => `
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center transition-transform hover:scale-[1.01]">
+                                <div>
+                                    <p class="font-black text-slate-700">Inv #${inv.no}</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Due: ${inv.due} | Plate: ${inv.plate}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-black text-slate-800">₱${inv.amount.toLocaleString()}</p>
+                                    <p class="text-[9px] font-black text-novo-red uppercase tracking-tighter italic">Overdue</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
 
-</div>
-
-<div class="toast" id="toast">Success</div>
-
-<script>
-const MOCK_DB = {
-  "v1.CA000075.a9f3b2": {
-    cardCode: "CA000075",
-    cardName: "ARACO POULTRY & LIVESTOCK CORPORATION",
-    shortMatch: ["araco", "araco poultry"],
-    contact: "j***@araco.ph / 09XX-***-1780",
-    address: "BACOLOD, PHILIPPINES",
-    invoices: [
-      { no: "133674", date: "2024-10-15", due: "2024-12-14", amount: 646000, vat: 158691.52, so: "SO-38", dr: "DR-126307", plate: "NHE 1247", driver: "RYAN LAVARITE", status: "overdue" },
-      { no: "133675", date: "2024-10-15", due: "2024-12-14", amount: 475000, vat: 116684.94, so: "SO-38", dr: "DR-126312", plate: "NAJ 7342", driver: "DARIO AGUILLAR", status: "overdue" },
-      { no: "133676", date: "2024-10-16", due: "2024-12-15", amount: 190000, vat: 46673.98, so: "SO-47", dr: "DR-126313", plate: "NCE 6097", driver: "JOHN MAR SEGOVIA", status: "overdue" },
-      { no: "133677", date: "2024-10-16", due: "2024-12-15", amount: 551000, vat: 135354.53, so: "SO-47", dr: "DR-126314", plate: "NHE 1427", driver: "RYAN LAVARITE", status: "overdue" }
-    ]
-  },
-  "v1.CA000145.c7e1d4": {
-    cardCode: "CA000145",
-    cardName: "D & J POULTRY SUPPLY",
-    shortMatch: ["d & j", "d&j", "dj poultry", "d and j"],
-    contact: "d***@djpoultry.ph / 09XX-***-3532",
-    address: "PHILIPPINES",
-    invoices: [
-      { no: "133284", date: "2024-11-01", due: "2024-11-16", amount: 282690.80, vat: 68520.81, so: "SO-122", dr: "DR-120140", plate: "CBJ 5990", driver: "JERIC MIGUEL", status: "overdue" }
-    ]
-  },
-  "v1.CA000309.f5b8a1": {
-    cardCode: "CA000309",
-    cardName: "JUDITH FEEDS & POULTRY SUPPLY",
-    shortMatch: ["judith", "judith feeds"],
-    contact: "ju***@judithfeeds.ph / 09XX-***-7585",
-    address: "BAGAC, BATAAN, PHILIPPINES",
-    invoices: [
-      { no: "61950", date: "2025-01-10", due: "2025-02-09", amount: 207290, vat: 55666.06, so: "SO-121", dr: "DR-84467", plate: "CTN 898", driver: "JOMAR DELA CRUZ", status: "due-soon" }
-    ]
-  }
-};
-
-const $ = id => document.getElementById(id);
-
-function fmtPHP(n) {
-  if (n === undefined || n === null || isNaN(n)) return 'PHP —';
-  return 'PHP ' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function fmtDate(d) {
-  if (!d) return '—';
-  const dt = new Date(d);
-  return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
-}
-function daysFromDue(d) {
-  if (!d) return null;
-  const due = new Date(d); const today = new Date();
-  today.setHours(0,0,0,0); due.setHours(0,0,0,0);
-  return Math.floor((today - due) / 86400000);
-}
-function toast(msg, err = false) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.toggle('err', err);
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-function setStep(n, done = []) {
-  document.querySelectorAll('.steps .step').forEach(s => {
-    const num = Number(s.dataset.step);
-    s.classList.remove('active', 'done');
-    if (done.includes(num)) s.classList.add('done');
-    else if (num === n) s.classList.add('active');
-  });
-}
-function showSection(id) {
-  ['step1','step2','step3','step4'].forEach(s => $(s).classList.add('hidden'));
-  $(id).classList.remove('hidden');
-}
-
-let currentCustomer = null;
-let currentToken = null;
-
-function validateToken() {
-  const hash = location.hash;
-  let token = null;
-  if (hash.startsWith('#t=')) token = hash.slice(3);
-  if (!token) token = 'v1.CA000075.a9f3b2';
-  currentToken = token;
-
-  const record = MOCK_DB[token];
-  if (!record) {
-    $('step1Msg').textContent = '';
-    $('step1Bad').classList.remove('hidden');
-    $('proceedTo2').disabled = true;
-    return;
-  }
-  currentCustomer = record;
-  $('step1Msg').textContent = '';
-  $('step1Good').classList.remove('hidden');
-  $('step1Cust').textContent = record.cardName + ' (' + record.cardCode + ')';
-  $('proceedTo2').disabled = false;
-}
-
-$('proceedTo2').addEventListener('click', () => {
-  showSection('step2');
-  setStep(2, [1]);
-});
-
-let attemptsLeft = 3;
-$('verifyName').addEventListener('click', () => {
-  const input = $('nameInput').value.trim().toLowerCase();
-  if (!input) {
-    $('nameInput').focus();
-    return;
-  }
-  const ok = currentCustomer.shortMatch.some(m => input.includes(m.toLowerCase())) ||
-             input.includes(currentCustomer.cardName.toLowerCase().split(/[,&]/)[0].trim());
-  if (ok) {
-    $('nameErr').classList.add('hidden');
-    $('otpDest').textContent = currentCustomer.contact;
-    showSection('step3');
-    setStep(3, [1,2]);
-  } else {
-    attemptsLeft--;
-    $('attemptsLeft').textContent = attemptsLeft;
-    $('nameErr').classList.remove('hidden');
-    if (attemptsLeft <= 0) {
-      $('verifyName').disabled = true;
-      $('nameInput').disabled = true;
-      $('nameErr').innerHTML = '<b>Account locked.</b> Pakitawag po ang Vienovo AR Desk: (02) 1234-5678';
-    }
-  }
-});
-
-const DEMO_OTP = '123456';
-$('verifyOtp').addEventListener('click', () => {
-  const val = $('otpInput').value.trim();
-  if (val !== DEMO_OTP) {
-    $('otpErr').classList.remove('hidden');
-    return;
-  }
-  $('otpErr').classList.add('hidden');
-  renderStatement();
-  showSection('step4');
-  setStep(4, [1,2,3]);
-});
-$('resendOtp').addEventListener('click', () => toast('OTP resent (demo: 123456)'));
-
-function renderStatement() {
-  const c = currentCustomer;
-  $('sCustName').textContent = c.cardName;
-  $('sCustCode').textContent = c.cardCode + ' · ' + c.address;
-  $('sInvCount').textContent = c.invoices.length;
-  const total = c.invoices.reduce((s,i) => s + i.amount, 0);
-  $('sTotal').textContent = fmtPHP(total);
-
-  const list = $('invList');
-  list.innerHTML = '';
-  c.invoices.forEach((inv, idx) => {
-    const diff = daysFromDue(inv.due);
-    let badgeClass = 'ok', badgeText = '';
-    if (inv.status === 'paid') { badgeClass = 'paid'; badgeText = 'Paid'; }
-    else if (diff > 0) { badgeClass = 'overdue'; badgeText = diff + ' days overdue'; }
-    else if (diff === 0) { badgeClass = 'due-soon'; badgeText = 'Due today'; }
-    else if (diff < 0 && diff >= -7) { badgeClass = 'due-soon'; badgeText = 'Due in ' + Math.abs(diff) + 'd'; }
-    else { badgeClass = 'ok'; badgeText = 'Due in ' + Math.abs(diff) + 'd'; }
-
-    const li = document.createElement('li');
-    li.className = 'inv-item';
-    li.innerHTML = `
-      <div class="inv-head" data-i="${idx}">
-        <div>
-          <div class="no">Invoice #${inv.no}</div>
-          <div class="date">Issued: ${fmtDate(inv.date)}</div>
-        </div>
-        <div>
-          <div class="date">Due: ${fmtDate(inv.due)}</div>
-        </div>
-        <div class="amt">${fmtPHP(inv.amount)}</div>
-        <div><span class="badge ${badgeClass}">${badgeText}</span></div>
-      </div>
-      <div class="inv-body">
-        <table>
-          <tr><td class="lbl">Sales Order:</td><td class="val"><span class="refchip">${inv.so}</span></td></tr>
-          <tr><td class="lbl">Delivery Receipt:</td><td class="val"><span class="refchip">${inv.dr}</span></td></tr>
-          <tr><td class="lbl">Plate / Driver:</td><td class="val">${inv.plate} · ${inv.driver}</td></tr>
-          <tr><td class="lbl">Subtotal (ex-VAT):</td><td class="val">${fmtPHP(inv.amount - inv.vat)}</td></tr>
-          <tr><td class="lbl">VAT:</td><td class="val">${fmtPHP(inv.vat)}</td></tr>
-          <tr><td class="lbl"><b>Total:</b></td><td class="val"><b>${fmtPHP(inv.amount)}</b></td></tr>
-        </table>
-      </div>`;
-    list.appendChild(li);
-  });
-
-  list.querySelectorAll('.inv-head').forEach(h => {
-    h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
-  });
-}
-
-document.querySelectorAll('#tabs button').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-    $('pane-' + b.dataset.pane).classList.add('active');
-  });
-});
-
-function activeTab() {
-  const b = document.querySelector('#tabs button.active');
-  return b ? b.dataset.pane : 'commit';
-}
-$('btnSubmit').addEventListener('click', () => {
-  const tab = activeTab();
-  const c = currentCustomer;
-  const lines = [
-    `Greetings Vienovo AR Team,`, '',
-    `This is a signed response from the secured Customer Billing Portal.`,
-    `Token: ${currentToken}`,
-    `Customer: ${c.cardName} (${c.cardCode})`, ''
-  ];
-  let subject = '';
-  if (tab === 'commit') {
-    subject = `Payment Commitment — ${c.cardCode}`;
-    lines.push(`=== COMMIT TO PAY ===`);
-    lines.push(`Date: ${fmtDate($('commitDate').value)}`);
-    lines.push(`Mode: ${$('commitMode').value}`);
-    lines.push(`Coverage: ${$('commitCoverage').value}`);
-    if ($('commitNotes').value) lines.push(`Notes: ${$('commitNotes').value}`);
-  } else if (tab === 'proof') {
-    subject = `Proof of Payment — ${c.cardCode}`;
-    lines.push(`=== PROOF OF PAYMENT ===`);
-    lines.push(`Date Paid: ${fmtDate($('paidDate').value)}`);
-    lines.push(`Amount: ${fmtPHP($('paidAmount').value)}`);
-    lines.push(`Mode: ${$('paidMode').value}`);
-    lines.push(`Ref No: ${$('paidRef').value}`);
-    if ($('paidNotes').value) lines.push(`Notes: ${$('paidNotes').value}`);
-    lines.push(''); lines.push('*** Please attach receipt/screenshot ***');
-  } else {
-    subject = `Dispute — ${c.cardCode}`;
-    lines.push(`=== DISPUTE / INQUIRY ===`);
-    lines.push(`Reason: ${$('dispReason').value}`);
-    lines.push(`Details: ${$('dispDetails').value}`);
-  }
-  lines.push(''); lines.push('-- Sent from Vienovo AR Customer Portal --');
-  const href = `mailto:ar@vienovo.ph?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
-  window.location.href = href;
-  toast('Opening your email app...');
-});
-
-$('btnPrint').addEventListener('click', () => window.print());
-
-validateToken();
-</script>
-
+                <div class="p-8 bg-white">
+                    <h4 class="text-sm font-black text-novo-blue uppercase mb-6 tracking-tighter border-l-4 border-novo-green pl-3">Response to Vienovo AR</h4>
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <button class="bg-white border-2 border-slate-100 text-[10px] font-black py-3 rounded-lg hover:border-novo-blue transition-all uppercase">Commit to Pay</button>
+                        <button class="bg-white border-2 border-slate-100 text-[10px] font-black py-3 rounded-lg hover:border-novo-blue transition-all uppercase">Upload Proof</button>
+                        <button class="bg-white border-2 border-slate-100 text-[10px] font-black py-3 rounded-lg hover:border-novo-blue transition-all uppercase">Dispute</button>
+                    </div>
+                    <textarea class="w-full p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-novo-blue/20 transition-all mb-4" rows="3" placeholder="Additional notes or payment reference..."></textarea>
+                    <button class="w-full bg-novo-blue text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg hover:brightness-110 tracking-widest">Submit Response</button>
+                    
+                    <button onclick="window.print()" class="w-full mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-novo-blue">Print Official Statement</button>
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>
