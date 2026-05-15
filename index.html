@@ -1,248 +1,832 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vienovo | Secure Customer Portal</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.25/jsrsasign-all-min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.2/otpauth.dist.min.js"></script>
+<meta charset="UTF-8">
+<title>VIENOVO:CMMS101 v4 (FIXED) — Traceability FAQ + Trend Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--card2:#334155;--border:#475569;
+  --text:#f1f5f9;--text2:#cbd5e1;--text3:#94a3b8;
+  --red:#ef4444;--amber:#f59e0b;--green:#10b981;--blue:#3b82f6;--purple:#a855f7;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'DM Sans',sans-serif}
+body{background:var(--bg);color:var(--text);padding:20px}
+.container{max-width:1200px;margin:0 auto}
+.header{background:linear-gradient(135deg,#1e40af,#7c3aed);border-radius:14px;padding:22px 26px;margin-bottom:16px;border:2px solid #fbbf24}
+.header h1{font-size:22px;font-weight:700;letter-spacing:.5px}
+/* FIX 1: was '.header.sub' (no space) → '.header .sub' so the sub line is actually styled  */
+.header .sub{font-size:12px;color:#dbeafe;margin-top:4px}
 
-    <style>
-        :root {
-            --novo-blue: #185FA5;
-            --novo-green: #8CC63F;
-            --novo-red: #A32D2D;
-        }
-        .bg-novo-blue { background-color: var(--novo-blue); }
-        .text-novo-blue { color: var(--novo-blue); }
-        .bg-novo-green { background-color: var(--novo-green); }
-        .border-novo-green { border-color: var(--novo-green); }
-        .text-novo-red { color: var(--novo-red); }
-        
-        .step-pill.active { background-color: var(--novo-blue); color: white; transform: scale(1.02); shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .step-pill.completed { background-color: var(--novo-green); color: white; }
-        
-        .btn-primary { background-color: var(--novo-blue); transition: all 0.2s; }
-        .btn-primary:hover:not(:disabled) { background-color: #124a82; transform: translateY(-1px); }
-        .btn-primary:disabled { background-color: #cbd5e1; cursor: not-allowed; }
-    </style>
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+.card h2{font-size:16px;color:var(--blue);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+/* FIX 2: was '.card.small' → '.card .small' so the description inside cards renders properly */
+.card .small{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5}
+
+.faq{background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.faq-q{padding:14px 16px;background:#334155;cursor:pointer;font-weight:600;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.faq-q:hover{background:#3f4b5e}
+.faq-q .icon{transition:transform .2s ease;font-size:14px;color:var(--amber)}
+/* FIX 3: was '.faq.open.faq-a' (no space) → '.faq.open .faq-a' so accordion actually opens */
+.faq-a{padding:0 16px;font-size:13px;color:var(--text2);max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;border-top:0 solid var(--border);line-height:1.6}
+.faq.open .faq-a{max-height:1200px;padding:16px;border-top:1px solid var(--border)}
+/* FIX 4: was '.faq.open.faq-q span' → '.faq.open .faq-q .icon' */
+.faq.open .faq-q .icon{transform:rotate(90deg)}
+
+.answer-box{background:rgba(59,130,246,.08);border-left:3px solid var(--blue);padding:12px;border-radius:6px;margin:12px 0;font-size:12px}
+.answer-box b{color:var(--text)}
+.kpi-inline{font-size:14px;font-weight:700;color:var(--amber);font-family:'JetBrains Mono',monospace;background:rgba(245,158,11,.1);padding:1px 7px;border-radius:4px}
+.formula{font-family:'JetBrains Mono',monospace;background:var(--card);padding:8px 12px;border-radius:6px;font-size:11px;color:var(--amber);margin:8px 0;border-left:3px solid var(--amber)}
+.chart-wrap{position:relative;height:280px;margin-top:12px}
+canvas{max-height:280px}
+#uploadBox{border:2px dashed var(--border);text-align:center;padding:30px}
+input[type=file]{color:var(--text2)}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--card2);color:var(--text2)}
+.tag.blue{background:rgba(59,130,246,.15);color:var(--blue)}
+.tag.red{background:rgba(239,68,68,.15);color:var(--red)}
+.note{font-size:11px;color:var(--text3);margin-top:8px}
+.empty-msg{padding:30px;text-align:center;color:var(--text3);font-style:italic;border:1px dashed var(--border);border-radius:8px;margin-top:12px}
+.chart-toolbar{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:8px;flex-wrap:wrap}
+.btn-csv{padding:8px 12px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn-csv:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-csv:active{transform:translateY(1px)}
+.btn-csv .ico{font-size:13px}
+.btn-csv .count{opacity:.6;font-weight:400}
+.btn-csv.summary{background:rgba(16,185,129,.08);border-color:var(--green);color:var(--green)}
+.btn-csv.summary:hover{background:var(--green);color:#fff}
+.btn-csv.detail{background:rgba(245,158,11,.08);border-color:var(--amber);color:var(--amber)}
+.btn-csv.detail:hover{background:var(--amber);color:#0f172a}
+</style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900 antialiased min-h-screen">
+<body>
+<div class="container">
+  <div class="header">
+    <h1>VIENOVO : CMMS101 v4 (FIXED) — Traceability FAQ + Trend Analytics</h1>
+    <div class="sub">HARD Principles: Honest, Appropriate, Respectful, Direct but Ethical. Data source: CMMS103.xlsx only.</div>
+  </div>
 
-    <header class="bg-white border-b-4 border-novo-green shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <img src="https://www.vienovo.ph/wp-content/uploads/2021/04/vienovo-logo.png" alt="Vienovo" class="h-10">
-            <div class="text-right">
-                <h1 class="text-[10px] font-black tracking-widest text-slate-400 uppercase">Accounts Receivable</h1>
-                <p class="text-[10px] font-bold text-novo-blue italic uppercase leading-none">Improving the way we feed mankind</p>
-            </div>
+  <div id="uploadBox" class="card">
+    <h2>Step 1: Load CMMS103.xlsx</h2>
+    <div class="small">All FAQs and trend charts below are auto-generated from your Excel data. No manual entry. No assumptions.</div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+  </div>
+
+  <div id="mainApp" style="display:none">
+
+    <!-- ===== FAQ 1 ===== -->
+    <div class="card">
+      <h2>Traceability FAQ 1 of 4 <span class="tag blue">Documentation</span></h2>
+      <div class="faq open">
+        <div class="faq-q">Q1: If an external auditor asks me to prove this request was necessary, can I provide a complete paper trail from Work Order Request to Warehouse Release? <span class="icon">▶</span></div>
+        <div class="faq-a">
+          <div class="answer-box">
+            <b>Auto-answer from CMMS103.xlsx:</b><br>
+            <span id="ans1_pct" class="kpi-inline">…</span> of Work Orders have a linked WOR document.
+            A complete paper trail requires: <b>WOR → WO → PR → PO → GRPO → Warehouse Release</b>.
+            Currently the chain starts at WO for <span id="ans1_wo" class="kpi-inline">…</span> records (<span id="ans1_wor" class="kpi-inline">…</span> WORs found).
+            <br><br>
+            <b>Ethical action:</b> Before submitting, verify if a WOR exists. If not, create one first to establish business need.
+          </div>
+          <div class="formula">Documentation_Completeness = COUNT(WO with matched WOR NO.) / COUNT(Total WO) × 100</div>
+          <div class="chart-wrap"><canvas id="chart1"></canvas></div>
+          <div class="chart-toolbar">
+            <button class="btn-csv summary" data-export="chart1_summary"><span class="ico">📊</span> Chart data CSV <span class="count" id="cnt_chart1_summary"></span></button>
+            <button class="btn-csv detail" data-export="chart1_detail"><span class="ico">📋</span> Detail records (audit proof) <span class="count" id="cnt_chart1_detail"></span></button>
+          </div>
+          <div class="note">Trend: monthly % of WOs that match an upstream WOR (by <code>WOR NO.</code>). Healthy process trends toward 100%. <b>Detail CSV</b> shows every WO with its WOR-link status para sa direct audit review.</div>
         </div>
-    </header>
+      </div>
+    </div>
 
-    <main class="container mx-auto max-w-2xl px-4 py-10">
-        
-        <nav class="flex justify-between mb-8 gap-2">
-            <div id="p1" class="step-pill active w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm">1. VALIDATE</div>
-            <div id="p2" class="step-pill bg-white w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm text-slate-300">2. VERIFY</div>
-            <div id="p3" class="step-pill bg-white w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm text-slate-300">3. SECURITY</div>
-            <div id="p4" class="step-pill bg-white w-1/4 py-3 text-[10px] font-black text-center rounded-lg shadow-sm text-slate-300">4. STATEMENT</div>
-        </nav>
-
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-            
-            <section id="step1" class="p-10 text-center">
-                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-novo-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">Secure Link Validation</h2>
-                <p class="text-slate-500 mb-8 text-sm">Verifying your 3-hour access credentials...</p>
-                
-                <div id="step1-msg" class="p-4 rounded-xl mb-8 text-sm font-medium bg-slate-50 border border-slate-100 italic text-slate-400">
-                    Checking cryptographic signature...
-                </div>
-                
-                <button id="btn-to-step2" disabled onclick="go(2)" class="btn-primary w-full text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg">
-                    Proceed to Name Verification
-                </button>
-            </section>
-
-            <section id="step2" class="p-10 hidden">
-                <h3 class="text-xl font-bold mb-2">Identity Verification</h3>
-                <p class="text-sm text-slate-500 mb-8 italic">"Pakisulat po ang registered business name na naka-file sa Vienovo para sa inyong seguridad."</p>
-                
-                <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Business Name / Authorized Contact</label>
-                <input type="text" id="name-input" placeholder="e.g. ARACO POULTRY" class="w-full p-4 border-2 border-slate-100 rounded-xl mb-8 focus:border-novo-blue outline-none text-lg font-semibold uppercase transition-all">
-                
-                <button onclick="checkName()" class="btn-primary w-full text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg">
-                    Confirm Identity
-                </button>
-            </section>
-
-            <section id="step3" class="p-10 hidden text-center">
-                <div class="flex justify-center mb-4">
-                    <span class="bg-blue-100 text-novo-blue text-[10px] font-black px-3 py-1 rounded-full uppercase">Two-Factor Authentication</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2">Security Code</h3>
-                <p class="text-sm text-slate-600 mb-8">Enter the 6-digit code from your <strong>Authenticator App</strong>.</p>
-                
-                <input type="text" id="otp" maxlength="6" placeholder="000000" class="w-full text-center text-5xl font-mono tracking-[0.2em] p-6 border-b-4 border-novo-blue outline-none bg-slate-50 mb-10 rounded-t-xl">
-
-                <button onclick="checkOTP()" class="bg-novo-green w-full text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg hover:brightness-105 mb-6 transition-all">
-                    Unlock Statement
-                </button>
-
-                <button onclick="toggleQR()" class="text-novo-blue text-[10px] font-bold uppercase tracking-tighter hover:underline">Setup Authenticator QR</button>
-                
-                <div id="qr-box" class="mt-8 hidden p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                    <div id="qrcode-img" class="flex justify-center mb-4 p-2 bg-white rounded-lg shadow-sm inline-block"></div>
-                    <p class="text-[9px] text-slate-400 font-black uppercase leading-tight">Scan this in Google or Microsoft Authenticator<br>to enroll your device.</p>
-                </div>
-            </section>
-
-            <section id="step4" class="hidden">
-                <div id="dashboard-ui"></div>
-            </section>
-
+    <!-- ===== FAQ 2 ===== -->
+    <div class="card">
+      <h2>Traceability FAQ 2 of 4 <span class="tag blue">Asset Accountability</span></h2>
+      <div class="faq open">
+        <div class="faq-q">Q2: Can I identify the specific asset/equipment where this item will be installed, using our Asset Registry? <span class="icon">▶</span></div>
+        <div class="faq-a">
+          <div class="answer-box">
+            <b>Auto-answer from CMMS103.xlsx:</b><br>
+            The WORK ORDER sheet has <b>no ASSET CODE column</b>. Linkage is estimated via the free-text <code>Machine</code> field
+            in CONSUMPTION fuzzy-matched against ASSET REGISTRY.<code>DESCRIPTION</code>:
+            <span id="ans2_match" class="kpi-inline">…</span> events achieved confident matches (≥0.78 Jaro-Winkler),
+            <span id="ans2_unmatch" class="kpi-inline">…</span> events untraceable.
+            Untraceable spend total: <span id="ans2_value" class="kpi-inline">…</span>.
+            <br><br>
+            <b>Ethical action:</b> Specify Asset Tag in request description. If unknown, physically verify the equipment first. "For maintenance use" is insufficient for audit.
+          </div>
+          <div class="formula">Asset_Linkage_Rate = COUNT(CONSUMPTION rows where fuzzy-match to ASSET ≥ 0.78) / COUNT(Total CONSUMPTION) × 100</div>
+          <div class="chart-wrap"><canvas id="chart2"></canvas></div>
+          <div class="chart-toolbar">
+            <button class="btn-csv summary" data-export="chart2_summary"><span class="ico">📊</span> Chart data CSV <span class="count" id="cnt_chart2_summary"></span></button>
+            <button class="btn-csv detail" data-export="chart2_detail"><span class="ico">📋</span> Detail records (audit proof) <span class="count" id="cnt_chart2_detail"></span></button>
+          </div>
+          <div class="note">Trend: monthly PHP value of consumption that could NOT be confidently linked to a specific asset. High bars = audit risk. <b>Detail CSV</b> lists every untraceable consumption event with Machine, Item, Qty, Amount, at fuzzy-match score.</div>
         </div>
+      </div>
+    </div>
 
-        <footer class="mt-12 text-center">
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                Official AR Contact: Ms. Cris-an D. · ar@vienovo.ph · (02) 1234-5678
-            </p>
-            <p class="mt-2 text-[9px] text-slate-300 italic">
-                Secure stateless link. Data is read-only and expires every 3 hours for your protection.
-            </p>
-        </footer>
-    </main>
+    <!-- ===== FAQ 3 ===== -->
+    <div class="card">
+      <h2>Traceability FAQ 3 of 4 <span class="tag blue">Inventory Governance</span></h2>
+      <div class="faq open">
+        <div class="faq-q">Q3: Is this item listed in our MIN MAX master file, and does this request align with approved stocking levels? <span class="icon">▶</span></div>
+        <div class="faq-a">
+          <div class="answer-box">
+            <b>Auto-answer from CMMS103.xlsx:</b><br>
+            CONSUMPTION vs MIN MAX shows <span id="ans3_ghost" class="kpi-inline">…</span> distinct items were consumed that are <b>not</b> in MIN MAX.
+            Additionally, <span id="ans3_prnocode" class="kpi-inline">…</span> Purchase Requests were created without an Item Code
+            (<span id="ans3_prpct" class="kpi-inline">…</span> of total PRs).
+            <br><br>
+            <b>Ethical action:</b> Verify the Item Code exists in MIN MAX before requesting. If non-stock, provide written justification + WOR reference.
+          </div>
+          <div class="formula">Governance_Adherence = 1 − (COUNT(CONSUMPTION events where Item_Code ∉ MIN_MAX) / COUNT(Total CONSUMPTION))</div>
+          <div class="chart-wrap"><canvas id="chart3"></canvas></div>
+          <div class="chart-toolbar">
+            <button class="btn-csv summary" data-export="chart3_summary"><span class="ico">📊</span> Chart data CSV <span class="count" id="cnt_chart3_summary"></span></button>
+            <button class="btn-csv detail" data-export="chart3_detail"><span class="ico">📋</span> Detail records (audit proof) <span class="count" id="cnt_chart3_detail"></span></button>
+          </div>
+          <div class="note">Trend: monthly count of ghost-item consumption events. A downward trend means governance is improving. <b>Detail CSV</b> lists every ghost-item event (Item Code wala sa Min-Max) with full transaction context.</div>
+        </div>
+      </div>
+    </div>
 
-    <script>
-        // CRITICAL: Set this to match your Python generator's SECRET_KEY
-        const SHARED_KEY = "YOUR_MASTER_SECRET_KEY"; 
-        let DATA = null;
+    <!-- ===== FAQ 4 ===== -->
+    <div class="card">
+      <h2>Traceability FAQ 4 of 4 <span class="tag blue">Personal Accountability</span></h2>
+      <div class="faq open">
+        <div class="faq-q">Q4: Am I prepared to confirm that I understand my accountability for this request if it is reviewed during an inventory audit? <span class="icon">▶</span></div>
+        <div class="faq-a">
+          <div class="answer-box">
+            <b>Auto-answer from CMMS103.xlsx:</b><br>
+            Composite Traceability Score (all 4 gates: has WOR + in Asset Reg + in Min-Max + has Item Code): <span id="ans4_score" class="kpi-inline">…</span>.
+            That means <span id="ans4_dirty" class="kpi-inline">…</span> records currently <b>fail at least one</b> gate.
+            <br><br>
+            <b>Ethical action:</b> Every field in the form is logged with your name + timestamp. Submitting acknowledges accountability.
+            If you can't answer Q1–Q3 confidently for THIS request, do not submit yet.
+          </div>
+          <div class="formula">Traceability_Score = COUNT(rows passing ALL 4 gates) / COUNT(Total CONSUMPTION rows) × 100</div>
+          <div class="chart-wrap"><canvas id="chart4"></canvas></div>
+          <div class="chart-toolbar">
+            <button class="btn-csv summary" data-export="chart4_summary"><span class="ico">📊</span> Chart data CSV <span class="count" id="cnt_chart4_summary"></span></button>
+            <button class="btn-csv detail" data-export="chart4_detail"><span class="ico">📋</span> Detail records (audit proof) <span class="count" id="cnt_chart4_detail"></span></button>
+          </div>
+          <div class="note">Trend: monthly composite traceability score. Target ≥ 95% for audit-ready process. <b>Detail CSV</b> shows every CONSUMPTION event with per-gate pass/fail (Has Ref, in Min-Max, in PR, Asset matched) plus final verdict.</div>
+        </div>
+      </div>
+    </div>
 
-        // ON LOAD: Verify JWT and 3-Hour Expiry
-        window.onload = () => {
-            const token = new URLSearchParams(window.location.search).get('data');
-            if (!token) return showError("Access Denied: Missing Link Data");
+  </div>
+</div>
 
-            try {
-                // 1. Check Signature
-                if (KJUR.jws.JWS.verify(token, {utf8: SHARED_KEY}, ["HS256"])) {
-                    DATA = KJUR.jws.JWS.readSafeJSONString(atob(token.split(".")[1]));
-                    
-                    // 2. CHECK EXPIRATION (PhD-Level Requirement: 3-Hour TTL)
-                    const now = Math.floor(Date.now() / 1000);
-                    if (now > DATA.exp) {
-                        return showError("Security Alert: This link has expired (3-hour limit). Please request a new one.");
-                    }
+<script>
+// =====================================================================
+// STATE
+// =====================================================================
+const S = { wo:[], pr:[], mm:[], cons:[], ar:[], wor:[], grpo:[], itr:[] };
+const charts = {};
+// Proof datasets generated during analysis (audit-ready CSV exports)
+const PROOF = {
+  chart1_summary: { headers:[], rows:[] },
+  chart1_detail:  { headers:[], rows:[] },
+  chart2_summary: { headers:[], rows:[] },
+  chart2_detail:  { headers:[], rows:[] },
+  chart3_summary: { headers:[], rows:[] },
+  chart3_detail:  { headers:[], rows:[] },
+  chart4_summary: { headers:[], rows:[] },
+  chart4_detail:  { headers:[], rows:[] }
+};
 
-                    // 3. UI Update
-                    document.getElementById('step1-msg').innerHTML = `✅ Link Verified for:<br><span class="text-novo-blue font-bold uppercase">${DATA.cardName}</span>`;
-                    document.getElementById('step1-msg').className = "p-4 rounded-xl mb-8 text-sm font-medium bg-blue-50 text-novo-blue border border-blue-100 shadow-inner";
-                    
-                    const btn = document.getElementById('btn-to-step2');
-                    btn.disabled = false;
-                    document.getElementById('p1').classList.add('completed');
-                } else { 
-                    showError("Security Alert: Invalid or tampered signature."); 
-                }
-            } catch (e) { 
-                showError("Critical Error: Link corruption detected."); 
+// =====================================================================
+// CSV DOWNLOAD UTILITY
+// =====================================================================
+function csvEscape(v) {
+  if (v == null) return '';
+  const s = String(v);
+  if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function downloadCSV(filename, headers, rows) {
+  if (!rows || !rows.length) {
+    alert('Walang rows na i-export para sa "' + filename + '".');
+    return;
+  }
+  const lines = [headers.map(csvEscape).join(',')];
+  rows.forEach(r => {
+    lines.push(headers.map(h => csvEscape(r[h])).join(','));
+  });
+  const blob = new Blob(['﻿' + lines.join('\r\n')], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+
+// Wire up all download buttons (event delegation)
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-csv');
+  if (!btn) return;
+  const key = btn.dataset.export;          // e.g. 'chart1_summary'
+  const proof = PROOF[key];
+  if (!proof || !proof.rows.length) {
+    alert('Mag-upload muna ng CMMS103.xlsx para may data na i-export.');
+    return;
+  }
+  const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  const filename = 'CMMS101_' + key + '_' + stamp + '.csv';
+  downloadCSV(filename, proof.headers, proof.rows);
+});
+
+// =====================================================================
+// UTILITIES (same logic na proven sa CMMS101 v2 — Jaro-Winkler + safe date parse)
+// =====================================================================
+const num = v => { const x = Number(v); return isNaN(x) ? 0 : x; };
+const upper = s => (s == null ? '' : String(s)).trim().toUpperCase();
+const toDate = v => {
+  if (v == null || v === '') return null;
+  if (v instanceof Date && !isNaN(v.getTime())) return v;
+  if (typeof v === 'number' && v > 25569) {        // Excel serial date
+    return new Date(Math.round((v - 25569) * 86400 * 1000));
+  }
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+};
+const fmt = (n, d=0) => Number(n).toLocaleString('en-PH', {minimumFractionDigits:d, maximumFractionDigits:d});
+const peso = n => 'PHP ' + fmt(Math.round(n));
+const pct  = (a, b) => (b > 0 ? (100 * a / b).toFixed(1) + '%' : '0%');
+
+function jw(a, b) {
+  a = upper(a); b = upper(b);
+  if (!a || !b) return 0;
+  const m_dist = Math.floor(Math.max(a.length, b.length) / 2) - 1;
+  const am = new Array(a.length).fill(false), bm = new Array(b.length).fill(false);
+  let matches = 0;
+  for (let i = 0; i < a.length; i++) {
+    const lo = Math.max(0, i - m_dist), hi = Math.min(i + m_dist + 1, b.length);
+    for (let j = lo; j < hi; j++) {
+      if (bm[j] || a[i] !== b[j]) continue;
+      am[i] = bm[j] = true; matches++; break;
+    }
+  }
+  if (!matches) return 0;
+  let t = 0, k = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (!am[i]) continue;
+    while (!bm[k]) k++;
+    if (a[i] !== b[k]) t++;
+    k++;
+  }
+  t /= 2;
+  const j_d = (matches/a.length + matches/b.length + (matches - t)/matches) / 3;
+  let l = 0;
+  while (l < 4 && l < a.length && l < b.length && a[l] === b[l]) l++;
+  return j_d + l * 0.1 * (1 - j_d);
+}
+
+// =====================================================================
+// FILE LOAD
+// =====================================================================
+document.getElementById('fileInput').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const wb = XLSX.read(ev.target.result, { type:'binary', cellDates:true });
+    const get = name => wb.Sheets[name]
+        ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:null, raw:false })
+        : [];
+    S.wo   = get('WORK ORDER');
+    S.pr   = get('PR STATUS');
+    S.mm   = get('MIN MAX');
+    S.cons = get('CONSUMPTION');
+    S.ar   = get('ASSET REGISTRY');
+    S.wor  = get('WOR');
+    S.grpo = get('GRPO');
+    S.itr  = get('ITR');
+    document.getElementById('uploadBox').style.display = 'none';
+    document.getElementById('mainApp').style.display   = 'block';
+    runAnalysis();
+  };
+  r.readAsBinaryString(f);
+});
+
+// FAQ accordion (works na ngayon kasi naayos na ang CSS)
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => q.parentElement.classList.toggle('open'));
+});
+
+// =====================================================================
+// MAIN ANALYSIS
+// =====================================================================
+function runAnalysis() {
+
+  // Pre-compute monthly window: trailing 12 months ending at max date found
+  const allDates = []
+    .concat(S.wo.map(w => toDate(w['Date Requested'] || w['START DATE'])))
+    .concat(S.cons.map(c => toDate(c.Date)))
+    .concat(S.pr.map(p => toDate(p['Request Date'])))
+    .filter(d => d);
+  const maxDate = allDates.length ? new Date(Math.max(...allDates.map(d => d.getTime()))) : new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(maxDate.getFullYear(), maxDate.getMonth() - i, 1);
+    months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+  }
+  const buckets = {};
+  months.forEach(m => buckets[m] = { wo:0, wor:0, cons:0, unmatched_val:0, ghost_events:0, full_pass:0 });
+  const monthKey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  const addTo = (date, field, val=1) => {
+    if (!date) return;
+    const k = monthKey(date);
+    if (buckets[k]) buckets[k][field] += val;
+  };
+
+  // =====================================================================
+  // CONTEXT LOOKUPS — para sa WHO/WHAT/WHEN/WHERE traceability sa CSV
+  // =====================================================================
+  // PR context per Item Code (most recent PR for each item)
+  const prCtx = {};
+  S.pr.forEach(p => {
+    const code = p['Item Code']; if (!code) return;
+    const d = toDate(p['Request Date']);
+    if (!prCtx[code] || (d && (!prCtx[code]._d || d > prCtx[code]._d))) {
+      prCtx[code] = {
+        _d: d,
+        requester:   p['Requested By'] || '',
+        dept:        p.Department || '',
+        location:    p.Location || '',
+        refNo:       p['Ref No.'] || '',
+        poDocNum:    p['PO DocNum'] || '',
+        grpoDocNum:  p['GRPO DocNum'] || '',
+        requestDate: p['Request Date'] || '',
+        reqDate:     p['Required Date'] || '',
+        prStatus:    p.Status || '',
+        is3rdParty:  p['Is 3rd Party'] || '',
+        note:        p.Note || ''
+      };
+    }
+  });
+
+  // GRPO context per Item Code (most recent receipt)
+  const grpoCtx = {};
+  (S.grpo || []).forEach(g => {
+    const code = g['Item Code']; if (!code) return;
+    const d = toDate(g['GRPO Date']);
+    if (!grpoCtx[code] || (d && (!grpoCtx[code]._d || d > grpoCtx[code]._d))) {
+      grpoCtx[code] = {
+        _d: d,
+        creator:   g.Creator || '',
+        vendor:    g.Vendor || '',
+        vendorCode: g['Vendor Code'] || '',
+        grpoNo:    g['GRPO No.'] || '',
+        grpoDate:  g['GRPO Date'] || '',
+        poNo:      g['PO No.'] || '',
+        drNo:      g['DR No.'] || '',
+        qtyRecv:   g['Qty Received /Kg'] || ''
+      };
+    }
+  });
+
+  // WO context for date+plant proximity lookup
+  // Index WO by Plant → array of {date, requester, assigned, woNo, woType, dept, status}
+  const woByPlant = {};
+  S.wo.forEach(w => {
+    const plant = (w.PLANT || '').toString().trim();
+    if (!plant) return;
+    const d = toDate(w['Date Requested'] || w['START DATE']);
+    if (!d) return;
+    if (!woByPlant[plant]) woByPlant[plant] = [];
+    woByPlant[plant].push({
+      date: d,
+      requester:    w['REQUESTER NAME'] || '',
+      assigned:     w['ASSIGNED PERSONNEL'] || '',
+      woNo:         w['WORK ORDER NO.'] || '',
+      worNo:        w['WOR NO.'] || '',
+      woType:       w['WORK ORDER TYPE'] || '',
+      dept:         w['REQUESTING DEPARTMENT'] || '',
+      status:       w.STATUS || '',
+      priority:     w['PRIORITIZATION CODE'] || '',
+      desc:         w['WORK ORDER DESCRIPTION'] || ''
+    });
+  });
+  // Find the nearest WO (±30 days) for given (plant, date)
+  function findNearestWO(plant, date) {
+    if (!plant || !date) return null;
+    const arr = woByPlant[plant.toString().trim()];
+    if (!arr) return null;
+    let best = null, bestDiff = 30 * 86400000;
+    for (const w of arr) {
+      const diff = Math.abs(w.date - date);
+      if (diff < bestDiff) { bestDiff = diff; best = w; }
+    }
+    return best;
+  }
+
+  // Helper: build the universal WHO/WHAT/WHEN/WHERE block for a CONSUMPTION row
+  function enrich(c) {
+    const code = c['Item Code'];
+    const cd = toDate(c.Date);
+    const pr = code ? prCtx[code] : null;
+    const gr = code ? grpoCtx[code] : null;
+    const wo = findNearestWO(c.Plant, cd);
+    const woGapDays = wo && cd ? Math.round((cd - wo.date) / 86400000) : '';
+    return {
+      // WHEN
+      'Consumption Date':   c.Date || '',
+      'Month':              c.Month || (cd ? monthKey(cd) : ''),
+      'PR Request Date':    pr ? pr.requestDate : '',
+      'PR Required Date':   pr ? pr.reqDate : '',
+      'GRPO Date':          gr ? gr.grpoDate : '',
+      'WO Date Requested':  wo ? wo.date.toISOString().slice(0,10) : '',
+      'Days vs WO':         woGapDays === '' ? '' : woGapDays,
+      // WHO
+      'PR Requester':       pr ? pr.requester : '',
+      'PR Department':      pr ? pr.dept : '',
+      'GRPO Creator (Warehouse)': gr ? gr.creator : '',
+      'WO Requester':       wo ? wo.requester : '',
+      'WO Assigned Personnel': wo ? wo.assigned : '',
+      'WO Requesting Dept': wo ? wo.dept : '',
+      // WHERE
+      'Plant':              c.Plant || '',
+      'Warehouse (Whs)':    c.Whs || '',
+      'Area':               c.Area || '',
+      'Machine':            c.Machine || '',
+      'PR Location':        pr ? pr.location : '',
+      // WHAT
+      'Material Code':      c['Material Code'] || '',
+      'Item Code':          code || '',
+      'Item Name':          c['Item Name'] || '',
+      'UoM':                c.UoM || '',
+      'Qty':                c.Qty || '',
+      'Unit Price':         c.Price || '',
+      'Total Amount (PHP)': num(c['Total Amount']).toFixed(2),
+      'Remarks':            c.Remarks || '',
+      // AUDIT REFERENCES
+      'GI No.':             c['GI#'] || '',
+      'Ref 2':              c['Ref 2'] || '',
+      'PR Ref No.':         pr ? pr.refNo : '',
+      'PO DocNum':          pr ? pr.poDocNum : (gr ? gr.poNo : ''),
+      'GRPO DocNum':        gr ? gr.grpoNo : (pr ? pr.grpoDocNum : ''),
+      'Vendor':             gr ? gr.vendor : '',
+      'WO No.':             wo ? wo.woNo : '',
+      'WOR No.':            wo ? wo.worNo : '',
+      'WO Type':            wo ? wo.woType : '',
+      'WO Status':          wo ? wo.status : '',
+      'PR Status':          pr ? pr.prStatus : '',
+      'Is 3rd Party':       pr ? pr.is3rdParty : ''
+    };
+  }
+
+  // ---- FAQ 1: WOR↔WO linkage --------------------------------------------
+  const woTotal = S.wo.length;
+  const worNos = new Set(
+    S.wor.map(w => (w['WOR NO.'] || w['WOR No.'] || '').toString().trim()).filter(Boolean)
+  );
+  const woWithWor = S.wo.filter(w => {
+    const wn = (w['WOR NO.'] || '').toString().trim();
+    return wn && worNos.has(wn);
+  }).length;
+  document.getElementById('ans1_pct').textContent = pct(woWithWor, woTotal);
+  document.getElementById('ans1_wo').textContent  = fmt(woTotal);
+  document.getElementById('ans1_wor').textContent = fmt(S.wor.length);
+
+  // Proof: detail rows for FAQ 1 — full WHO/WHAT/WHEN/WHERE for every WO
+  PROOF.chart1_detail.headers = [
+    // WHEN
+    'Date Requested', 'Start Date', 'Estimated End Date', 'Completion Date', '% Completion',
+    // WHO
+    'Requester Name', 'Requesting Department', 'Assigned Personnel',
+    // WHERE
+    'Plant',
+    // WHAT
+    'WO No.', 'WOR No.', 'WO Type', 'Nature of Work', 'Work Order Description',
+    'Items/Parts Replaced or Installed', 'Qty', 'Details of Job Required',
+    // COST
+    'Spareparts Cost', 'Labor Estimate', 'Total Cost',
+    'Actual Spareparts Cost', 'Actual Labor Cost', 'Total Actual Cost',
+    // AUDIT
+    'Status', 'Prioritization Code', 'Risk & Safety Requirements', 'Has Upstream WOR'
+  ];
+  PROOF.chart1_detail.rows = S.wo.map(w => {
+    const wn = (w['WOR NO.'] || '').toString().trim();
+    return {
+      'Date Requested':              w['Date Requested'] || '',
+      'Start Date':                  w['START DATE'] || '',
+      'Estimated End Date':          w['ESTIMATED END DATE'] || '',
+      'Completion Date':             w['COMPLETION DATE'] || '',
+      '% Completion':                w['PERCENT COMPLETION'] || '',
+      'Requester Name':              w['REQUESTER NAME'] || '',
+      'Requesting Department':       w['REQUESTING DEPARTMENT'] || '',
+      'Assigned Personnel':          w['ASSIGNED PERSONNEL'] || '',
+      'Plant':                       w.PLANT || '',
+      'WO No.':                      w['WORK ORDER NO.'] || '',
+      'WOR No.':                     wn,
+      'WO Type':                     w['WORK ORDER TYPE'] || '',
+      'Nature of Work':              w['NATURE OF WORK'] || '',
+      'Work Order Description':      w['WORK ORDER DESCRIPTION'] || '',
+      'Items/Parts Replaced or Installed': w['ITEMS/PARTS REPLACED OR INSTALLED:'] || '',
+      'Qty':                         w.QTY || '',
+      'Details of Job Required':     w['DETAILS OF JOB REQUIRED'] || '',
+      'Spareparts Cost':             w['SPAREPARTS COST'] || '',
+      'Labor Estimate':              w['LABOR ESTIMATE'] || '',
+      'Total Cost':                  w['TOTAL COST'] || '',
+      'Actual Spareparts Cost':      w['ACTUAL SPAREPARTS COST'] || '',
+      'Actual Labor Cost':           w['ACTUAL LABOR COST'] || '',
+      'Total Actual Cost':           w['TOTAL ACTUAL COST'] || '',
+      'Status':                      w.STATUS || '',
+      'Prioritization Code':         w['PRIORITIZATION CODE'] || '',
+      'Risk & Safety Requirements':  w['RISK & SAFETY REQUIREMENTS'] || '',
+      'Has Upstream WOR':            (wn && worNos.has(wn)) ? 'YES' : 'NO'
+    };
+  });
+
+  S.wo.forEach(w => {
+    const d = toDate(w['Date Requested'] || w['START DATE']); if (!d) return;
+    addTo(d, 'wo');
+    const wn = (w['WOR NO.'] || '').toString().trim();
+    if (wn && worNos.has(wn)) addTo(d, 'wor');
+  });
+
+  // ---- FAQ 2: CONSUMPTION ↔ ASSET REGISTRY fuzzy match ------------------
+  const arDescs = S.ar.map(a => upper(a.DESCRIPTION)).filter(Boolean);
+  // Build a small cache of Machine→bestMatch to avoid recomputation
+  const machineCache = {};
+  function bestMatch(machine) {
+    const key = upper(machine);
+    if (key in machineCache) return machineCache[key];
+    let best = 0;
+    for (const desc of arDescs) {
+      const s = jw(key, desc);
+      if (s > best) best = s;
+      if (best >= 0.95) break;
+    }
+    machineCache[key] = best;
+    return best;
+  }
+
+  // Proof: detail rows for FAQ 2 — full WHO/WHAT/WHEN/WHERE for every UNMATCHED CONSUMPTION
+  PROOF.chart2_detail.headers = [
+    // WHEN
+    'Consumption Date', 'Month', 'PR Request Date', 'PR Required Date', 'GRPO Date',
+    'WO Date Requested', 'Days vs WO',
+    // WHO
+    'PR Requester', 'PR Department', 'GRPO Creator (Warehouse)',
+    'WO Requester', 'WO Assigned Personnel', 'WO Requesting Dept',
+    // WHERE
+    'Plant', 'Warehouse (Whs)', 'Area', 'Machine', 'PR Location',
+    // WHAT
+    'Material Code', 'Item Code', 'Item Name', 'UoM', 'Qty', 'Unit Price',
+    'Total Amount (PHP)', 'Remarks',
+    // AUDIT REFERENCES
+    'GI No.', 'Ref 2', 'PR Ref No.', 'PO DocNum', 'GRPO DocNum', 'Vendor',
+    'WO No.', 'WOR No.', 'WO Type', 'WO Status', 'PR Status', 'Is 3rd Party',
+    // VERDICT
+    'Asset Match Score (JW)', 'Asset Linkage Verdict'
+  ];
+  PROOF.chart2_detail.rows = [];
+
+  let cons_matched = 0, cons_unmatched = 0, unmatched_val_total = 0;
+  S.cons.forEach(c => {
+    const d = toDate(c.Date);
+    const amt = num(c['Total Amount']);
+    const score = bestMatch(c.Machine);
+    const matched = score >= 0.78;
+    if (matched) cons_matched++;
+    else {
+      cons_unmatched++;
+      unmatched_val_total += amt;
+      addTo(d, 'unmatched_val', amt);
+    }
+    if (d) addTo(d, 'cons', amt);
+    // Only export unmatched (audit-relevant) — keep CSV focused
+    if (!matched) {
+      const row = enrich(c);
+      row['Asset Match Score (JW)'] = score.toFixed(3);
+      row['Asset Linkage Verdict']  = 'UNMATCHED (audit risk)';
+      PROOF.chart2_detail.rows.push(row);
+    }
+  });
+  document.getElementById('ans2_match').textContent   = fmt(cons_matched) + ' (' + pct(cons_matched, S.cons.length) + ')';
+  document.getElementById('ans2_unmatch').textContent = fmt(cons_unmatched);
+  document.getElementById('ans2_value').textContent   = peso(unmatched_val_total);
+
+  // ---- FAQ 3: Min-Max governance ----------------------------------------
+  const mmCodes = new Set(S.mm.map(m => m['ITEM CODE']).filter(Boolean));
+  const ghostItems = new Set();
+
+  PROOF.chart3_detail.headers = [
+    // WHEN
+    'Consumption Date', 'Month', 'PR Request Date', 'GRPO Date', 'WO Date Requested', 'Days vs WO',
+    // WHO
+    'PR Requester', 'PR Department', 'GRPO Creator (Warehouse)',
+    'WO Requester', 'WO Assigned Personnel', 'WO Requesting Dept',
+    // WHERE
+    'Plant', 'Warehouse (Whs)', 'Area', 'Machine', 'PR Location',
+    // WHAT
+    'Material Code', 'Item Code', 'Item Name', 'UoM', 'Qty', 'Unit Price',
+    'Total Amount (PHP)', 'Remarks',
+    // AUDIT
+    'GI No.', 'Ref 2', 'PR Ref No.', 'PO DocNum', 'GRPO DocNum', 'Vendor',
+    'WO No.', 'WOR No.', 'WO Type', 'WO Status', 'PR Status', 'Is 3rd Party',
+    // VERDICT
+    'Governance Reason'
+  ];
+  PROOF.chart3_detail.rows = [];
+
+  S.cons.forEach(c => {
+    const code = c['Item Code'];
+    if (code && !mmCodes.has(code)) {
+      ghostItems.add(code);
+      addTo(toDate(c.Date), 'ghost_events');
+      const row = enrich(c);
+      row['Governance Reason'] = 'Item Code NOT in MIN MAX master';
+      PROOF.chart3_detail.rows.push(row);
+    } else if (!code) {
+      const row = enrich(c);
+      row['Item Code'] = '(empty)';
+      row['Governance Reason'] = 'Consumption has NO Item Code';
+      PROOF.chart3_detail.rows.push(row);
+    }
+  });
+  const prTotal    = S.pr.length;
+  const prNoCode   = S.pr.filter(p => !p['Item Code']).length;
+  document.getElementById('ans3_ghost').textContent    = fmt(ghostItems.size);
+  document.getElementById('ans3_prnocode').textContent = fmt(prNoCode);
+  document.getElementById('ans3_prpct').textContent    = pct(prNoCode, prTotal);
+
+  // ---- FAQ 4: Composite Traceability Score (4 gates) --------------------
+  const prItemSet = new Set(S.pr.map(p => p['Item Code']).filter(Boolean));
+  let consTotal = 0, full_pass = 0;
+
+  PROOF.chart4_detail.headers = [
+    // WHEN
+    'Consumption Date', 'Month', 'PR Request Date', 'PR Required Date', 'GRPO Date',
+    'WO Date Requested', 'Days vs WO',
+    // WHO
+    'PR Requester', 'PR Department', 'GRPO Creator (Warehouse)',
+    'WO Requester', 'WO Assigned Personnel', 'WO Requesting Dept',
+    // WHERE
+    'Plant', 'Warehouse (Whs)', 'Area', 'Machine', 'PR Location',
+    // WHAT
+    'Material Code', 'Item Code', 'Item Name', 'UoM', 'Qty', 'Unit Price',
+    'Total Amount (PHP)', 'Remarks',
+    // AUDIT
+    'GI No.', 'Ref 2', 'PR Ref No.', 'PO DocNum', 'GRPO DocNum', 'Vendor',
+    'WO No.', 'WOR No.', 'WO Type', 'WO Status', 'PR Status', 'Is 3rd Party',
+    // GATES + VERDICT
+    'Gate 1: Has Upstream Ref', 'Gate 2: In MIN MAX', 'Gate 3: In PR STATUS',
+    'Gate 4: Asset Matched', 'Gates Passed (0-4)', 'Verdict'
+  ];
+  PROOF.chart4_detail.rows = [];
+
+  S.cons.forEach(c => {
+    consTotal++;
+    const d = toDate(c.Date);
+    const hasWorNo  = !!(c.Ref || c['Ref 2']);                       // weak proxy — has any upstream ref
+    const inMM      = c['Item Code'] && mmCodes.has(c['Item Code']);
+    const inPR      = c['Item Code'] && prItemSet.has(c['Item Code']);
+    const hasAsset  = bestMatch(c.Machine) >= 0.78;
+    const passes = (hasWorNo ? 1 : 0) + (inMM ? 1 : 0) + (inPR ? 1 : 0) + (hasAsset ? 1 : 0);
+    if (passes === 4) { full_pass++; addTo(d, 'full_pass'); }
+    // Export only rows that fail at least one gate (audit-relevant)
+    if (passes < 4) {
+      const row = enrich(c);
+      row['Gate 1: Has Upstream Ref'] = hasWorNo ? 'PASS' : 'FAIL';
+      row['Gate 2: In MIN MAX']       = inMM     ? 'PASS' : 'FAIL';
+      row['Gate 3: In PR STATUS']     = inPR     ? 'PASS' : 'FAIL';
+      row['Gate 4: Asset Matched']    = hasAsset ? 'PASS' : 'FAIL';
+      row['Gates Passed (0-4)']       = passes;
+      row['Verdict']                  = passes === 0 ? 'DIRTY (zero traceability)'
+                                       : passes <= 2 ? 'PARTIAL (1-2 gates passed)'
+                                       : 'NEARLY CLEAN (3 of 4)';
+      PROOF.chart4_detail.rows.push(row);
+    }
+  });
+  const dirty = consTotal - full_pass;
+  document.getElementById('ans4_score').textContent = pct(full_pass, consTotal);
+  document.getElementById('ans4_dirty').textContent = fmt(dirty);
+
+  // =====================================================================
+  // CHARTS — fixed monthly series (12 months trailing)
+  // =====================================================================
+  function safeDestroy(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+  function mkLine(id, label, values, color, format) {
+    safeDestroy(id);
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    charts[id] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [{
+          label, data: values,
+          borderColor: color, backgroundColor: color + '33',
+          tension: 0.25, fill: true, pointRadius: 4, pointBackgroundColor: color
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#cbd5e1' } },
+          tooltip: {
+            callbacks: {
+              label: ctx => label + ': ' + (format ? format(ctx.raw) : ctx.raw)
             }
-        };
-
-        function go(s) {
-            document.querySelectorAll('section').forEach(x => x.classList.add('hidden'));
-            document.getElementById(`step${s}`).classList.remove('hidden');
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }
         }
+      }
+    });
+  }
 
-        function showError(m) {
-            const msg = document.getElementById('step1-msg');
-            msg.innerText = "❌ " + m;
-            msg.className = "p-4 rounded-xl mb-8 text-sm font-bold bg-red-50 text-novo-red border border-red-100";
-        }
+  // Chart 1: % WOs with WOR (per month)
+  mkLine('chart1', '% Documented (WO with WOR)',
+    months.map(m => buckets[m].wo > 0 ? +(100 * buckets[m].wor / buckets[m].wo).toFixed(1) : 0),
+    '#3b82f6', v => v + '%'
+  );
+  // Chart 2: Unmatched-to-asset value (PHP)
+  mkLine('chart2', 'Unmatched-asset spend (PHP)',
+    months.map(m => Math.round(buckets[m].unmatched_val)),
+    '#f59e0b', v => peso(v)
+  );
+  // Chart 3: Ghost-item consumption event count
+  mkLine('chart3', 'Ghost-item events',
+    months.map(m => buckets[m].ghost_events),
+    '#ef4444', v => fmt(v)
+  );
+  // Chart 4: Composite traceability % per month
+  mkLine('chart4', 'Composite traceability %',
+    months.map(m => {
+      const denom = S.cons.filter(c => {
+        const d = toDate(c.Date); return d && monthKey(d) === m;
+      }).length;
+      return denom > 0 ? +(100 * buckets[m].full_pass / denom).toFixed(1) : 0;
+    }),
+    '#10b981', v => v + '%'
+  );
 
-        function checkName() {
-            const val = document.getElementById('name-input').value.toUpperCase().trim();
-            // Fuzzy check: at least 4 chars match the CardName
-            if (DATA.cardName.includes(val) && val.length >= 4) {
-                document.getElementById('p2').classList.add('completed');
-                document.getElementById('p3').classList.add('active');
-                go(3);
-            } else {
-                alert("The name entered does not match the account holder. Please check your records.");
-            }
-        }
+  // Helpful empty-state messages if all zeros
+  ['chart1', 'chart2', 'chart3', 'chart4'].forEach(id => {
+    const ch = charts[id]; if (!ch) return;
+    const ds = ch.data.datasets[0].data;
+    if (ds.every(v => v === 0)) {
+      const parent = ch.canvas.parentElement;
+      if (!parent.querySelector('.empty-msg')) {
+        const div = document.createElement('div');
+        div.className = 'empty-msg';
+        div.textContent = 'Walang non-zero data sa trailing 12 months. Maaaring (a) walang upstream linkage talaga, o (b) ibang format ang dates sa source file.';
+        parent.appendChild(div);
+      }
+    }
+  });
 
-        function checkOTP() {
-            const code = document.getElementById('otp').value.trim();
-            const totp = new OTPAuth.TOTP({ secret: DATA.totpSecret, digits: 6, period: 30 });
-            
-            if (totp.validate({ token: code, window: 1 }) !== null) {
-                document.getElementById('p3').classList.add('completed');
-                document.getElementById('p4').classList.add('active');
-                renderDashboard();
-                go(4);
-            } else {
-                alert("Incorrect Security Code. Please check your Authenticator app or your phone's clock.");
-            }
-        }
+  // =====================================================================
+  // BUILD CSV SUMMARY DATASETS (chart-level aggregates, 12-row tables)
+  // =====================================================================
+  PROOF.chart1_summary.headers = ['Month', 'Total WO', 'WO with WOR', '% Documented'];
+  PROOF.chart1_summary.rows = months.map(m => ({
+    'Month':         m,
+    'Total WO':      buckets[m].wo,
+    'WO with WOR':   buckets[m].wor,
+    '% Documented':  buckets[m].wo > 0 ? (100 * buckets[m].wor / buckets[m].wo).toFixed(1) : '0.0'
+  }));
 
-        function toggleQR() {
-            const box = document.getElementById('qr-box');
-            box.classList.toggle('hidden');
-            if (!box.classList.contains('hidden')) {
-                const uri = `otpauth://totp/Vienovo%20AR:${DATA.cardCode}?secret=${DATA.totpSecret}&issuer=Vienovo%20Inc`;
-                document.getElementById('qrcode-img').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(uri)}" class="mx-auto" />`;
-            }
-        }
+  PROOF.chart2_summary.headers = ['Month', 'Total Consumption (PHP)', 'Unmatched Asset Spend (PHP)', '% Unmatched'];
+  PROOF.chart2_summary.rows = months.map(m => ({
+    'Month':                       m,
+    'Total Consumption (PHP)':     Math.round(buckets[m].cons),
+    'Unmatched Asset Spend (PHP)': Math.round(buckets[m].unmatched_val),
+    '% Unmatched':                 buckets[m].cons > 0 ? (100 * buckets[m].unmatched_val / buckets[m].cons).toFixed(1) : '0.0'
+  }));
 
-        function renderDashboard() {
-            const total = DATA.invoices.reduce((s, i) => s + i.amount, 0);
-            document.getElementById('dashboard-ui').innerHTML = `
-                <div class="bg-novo-blue p-8 text-white">
-                    <p class="text-[10px] font-black tracking-widest opacity-60 uppercase mb-1">Current Outstanding Balance</p>
-                    <h2 class="text-4xl font-black mb-6 tracking-tighter">₱${total.toLocaleString(undefined, {minimumFractionDigits: 2})}</h2>
-                    <div class="pt-4 border-t border-white/20">
-                        <p class="text-xs font-black uppercase">${DATA.cardName}</p>
-                        <p class="text-[10px] opacity-60">${DATA.cardCode} | ${DATA.address}</p>
-                    </div>
-                </div>
-                
-                <div class="p-6 bg-slate-50 border-b border-slate-100">
-                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Open Invoices</h4>
-                    <div class="space-y-3">
-                        ${DATA.invoices.map(inv => `
-                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center transition-transform hover:scale-[1.01]">
-                                <div>
-                                    <p class="font-black text-slate-700">Inv #${inv.no}</p>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Due: ${inv.due} | Plate: ${inv.plate}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-black text-slate-800">₱${inv.amount.toLocaleString()}</p>
-                                    <p class="text-[9px] font-black text-novo-red uppercase tracking-tighter italic">Overdue</p>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
+  PROOF.chart3_summary.headers = ['Month', 'Ghost Item Events'];
+  PROOF.chart3_summary.rows = months.map(m => ({
+    'Month':              m,
+    'Ghost Item Events':  buckets[m].ghost_events
+  }));
 
-                <div class="p-8 bg-white">
-                    <h4 class="text-sm font-black text-novo-blue uppercase mb-6 tracking-tighter border-l-4 border-novo-green pl-3">Response to Vienovo AR</h4>
-                    <div class="grid grid-cols-3 gap-3 mb-6">
-                        <button class="bg-white border-2 border-slate-100 text-[10px] font-black py-3 rounded-lg hover:border-novo-blue transition-all uppercase">Commit to Pay</button>
-                        <button class="bg-white border-2 border-slate-100 text-[10px] font-black py-3 rounded-lg hover:border-novo-blue transition-all uppercase">Upload Proof</button>
-                        <button class="bg-white border-2 border-slate-100 text-[10px] font-black py-3 rounded-lg hover:border-novo-blue transition-all uppercase">Dispute</button>
-                    </div>
-                    <textarea class="w-full p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-novo-blue/20 transition-all mb-4" rows="3" placeholder="Additional notes or payment reference..."></textarea>
-                    <button class="w-full bg-novo-blue text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg hover:brightness-110 tracking-widest">Submit Response</button>
-                    
-                    <button onclick="window.print()" class="w-full mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-novo-blue">Print Official Statement</button>
-                </div>
-            `;
-        }
-    </script>
+  PROOF.chart4_summary.headers = ['Month', 'Total Consumption Rows', 'Rows Passing All 4 Gates', 'Composite Traceability %'];
+  PROOF.chart4_summary.rows = months.map(m => {
+    const denom = S.cons.filter(c => { const d = toDate(c.Date); return d && monthKey(d) === m; }).length;
+    return {
+      'Month':                       m,
+      'Total Consumption Rows':      denom,
+      'Rows Passing All 4 Gates':    buckets[m].full_pass,
+      'Composite Traceability %':    denom > 0 ? (100 * buckets[m].full_pass / denom).toFixed(1) : '0.0'
+    };
+  });
+
+  // Update row-count badges on each button
+  Object.keys(PROOF).forEach(key => {
+    const cnt = document.getElementById('cnt_' + key);
+    if (cnt) cnt.textContent = '(' + fmt(PROOF[key].rows.length) + ' rows)';
+  });
+}
+</script>
 </body>
 </html>
